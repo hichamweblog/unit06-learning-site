@@ -1,0 +1,16 @@
+{
+  "name": "منهج الإسلام في محاربة الانحراف والجريمة",
+  "short_name": "منهج الإسلام",
+  "description": "الدرس والأنشطة والاختبار والبطاقات التعليمية للوحدة السادسة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f3ec",
+  "theme_color": "#10243b",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
