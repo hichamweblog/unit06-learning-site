@@ -17,50 +17,38 @@ const destinationLabels = [
   'افتح محور المنهج العلاجي',
   'افتح محور الخصائص والحكمة',
   'افتح محور الخصائص والحكمة',
-  'افتح تدريبات البكالوريا',
+  'افتح تدريبات للبكالوريا',
 ];
 
 interface VisualMap {
   id: string;
   title: string;
   badge: string;
-  number: string;
-  description: string;
   imageSrc: string;
   fileName: string;
-  highlights: string[];
 }
 
 const visualMaps: VisualMap[] = [
   {
     id: 'mindmap-buzan',
-    title: 'الخريطة الذهنية الشاملة (Buzan Style)',
+    title: 'الخريطة الذهنية الشاملة',
     badge: 'شجرة الوحدة الكاملة',
-    number: '01',
-    description: 'خريطة ذهنية تشجيرية شاملة تجمع محاور الوحدة الخمسة بأفرعها وأدلتها الشرعية، صممت لتنشيط الذاكرة البصرية واستحضار عناصر الدرس كاملة في ورقة واحدة.',
     imageSrc: '/images/maps/unit06-mindmap-buzan.jpg',
     fileName: 'خريطة_الوحدة_06_الشاملة.jpg',
-    highlights: ['المفاهيم الأساسية', 'المنهج الوقائي', 'المنهج العلاجي وتفصيل العقوبات', 'خصائص العقوبات', 'الحكمة من التشريع'],
   },
   {
     id: 'infographic',
     title: 'الإنفوجرافيك التعليمي والرسوم التوضيحية',
     badge: 'رموز بصرية وإيضاحات',
-    number: '02',
-    description: 'رسم توضيحي عصري يوضح المنهجين (الوقائي والعلاجي) والفرق بينهما، مع تمثيل بصري للكليات الخمس، وتأديب الجناة، والرحمة بدرء الحدود بالشبهات.',
     imageSrc: '/images/maps/unit06-infographic.jpg',
     fileName: 'إنفوجرافيك_منهج_الإسلام_محاربة_الجريمة.jpg',
-    highlights: ['الوقاية قبل وقوع الجريمة', 'العلاج بالردع بعد الجريمة', 'أقسام العقوبات الشرعية', 'الحكمة السامية والكليات الخمس'],
   },
   {
     id: 'integrated-vision',
-    title: 'لوحة الرؤية المتكاملة (التأطير التراثي الأصيل)',
-    badge: 'تأطير مفاهيمي دقيق',
-    number: '03',
-    description: 'تصميم تأطيري أصيل يميز بدقة منهجية بين «الانحراف» و«الجريمة»، ويفصّل أحكام الحدود (حق الله)، والقصاص والدية (حق العبد)، والتعزير (السلطة التقديرية للقاضي).',
+    title: 'لوحة الرؤية المتكاملة للوقاية والعلاج',
+    badge: 'تأطير مفاهيمي أصيل',
     imageSrc: '/images/maps/unit06-integrated-vision.jpg',
     fileName: 'لوحة_الرؤية_المتكاملة_الوحدة_06.jpg',
-    highlights: ['التمييز بين الانحراف والجريمة', 'عقوبات الحدود والشفاعة', 'القصاص والدية كبديل مالي', 'التعزير والسلطة التقديرية'],
   },
 ];
 
@@ -75,47 +63,74 @@ function makeStudentBranches() {
 export function MapPage() {
   const branches = makeStudentBranches();
   const [viewMode, setViewMode] = useState<'visual' | 'interactive'>('visual');
+  const [currentMapIndex, setCurrentMapIndex] = useState(0);
   const [selectedBranch, setSelectedBranch] = useState(0);
-  const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
+  const currentMap = visualMaps[currentMapIndex] ?? visualMaps[0]!;
   const activeBranch = branches[selectedBranch];
-  const activeLightboxMap = activeLightboxIndex !== null ? visualMaps[activeLightboxIndex] : null;
+
+  function handlePrev() {
+    setCurrentMapIndex((prev) => (prev > 0 ? prev - 1 : visualMaps.length - 1));
+    setZoomLevel(1);
+  }
+
+  function handleNext() {
+    setCurrentMapIndex((prev) => (prev < visualMaps.length - 1 ? prev + 1 : 0));
+    setZoomLevel(1);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const touch = e.touches[0];
+    if (touch) setTouchStartX(touch.clientX);
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX === null) return;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const touchEndX = touch.clientX;
+    const diff = touchStartX - touchEndX;
+    // In RTL: swipe left (diff > 50) means next, swipe right (diff < -50) means prev
+    if (diff > 50) {
+      handleNext();
+    } else if (diff < -50) {
+      handlePrev();
+    }
+    setTouchStartX(null);
+  }
 
   useEffect(() => {
-    if (activeLightboxIndex === null) {
-      setZoomLevel(1);
-      return;
-    }
-
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setActiveLightboxIndex(null);
+      if (viewMode !== 'visual') return;
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        setZoomLevel(1);
       } else if (e.key === 'ArrowRight') {
-        setActiveLightboxIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : visualMaps.length - 1));
-        setZoomLevel(1);
+        handlePrev();
       } else if (e.key === 'ArrowLeft') {
-        setActiveLightboxIndex((prev) => (prev !== null && prev < visualMaps.length - 1 ? prev + 1 : 0));
-        setZoomLevel(1);
-      } else if (e.key === '+' || e.key === '=') {
+        handleNext();
+      } else if (isFullscreen && (e.key === '+' || e.key === '=')) {
         setZoomLevel((z) => Math.min(z + 0.25, 2.5));
-      } else if (e.key === '-') {
+      } else if (isFullscreen && e.key === '-') {
         setZoomLevel((z) => Math.max(z - 0.25, 1));
-      } else if (e.key === '0') {
+      } else if (isFullscreen && e.key === '0') {
         setZoomLevel(1);
       }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeLightboxIndex]);
+  }, [viewMode, isFullscreen]);
 
   return (
     <div className="page-wrap inner-page map-page">
       <PageHeading
         eyebrow="الذاكرة البصرية والمفاهيمية"
         title="الخرائط الذهنية"
-        description="استحضر محاور الوحدة وروابطها عبر الخرائط المصوّرة التوضيحية القابلة للتكبير والتحميل، أو تصفح الخريطة التفاعلية الشجرية."
+        description="استحضر محاور الوحدة وروابطها عبر الخرائط المصوّرة مع إمكانية التمرير والتكبير والتحميل، أو تصفح الخريطة التفاعلية."
       />
 
       <nav className="map-view-switcher" aria-label="أنماط عرض الخرائط">
@@ -125,9 +140,7 @@ export function MapPage() {
           onClick={() => setViewMode('visual')}
           aria-pressed={viewMode === 'visual'}
         >
-          <span className="switcher-icon" aria-hidden="true">🖼️</span>
-          <span>الخرائط المصوّرة والإنفوجرافيك</span>
-          <span className="switcher-badge">3 خرائط</span>
+          <span>الخرائط المصوّرة</span>
         </button>
         <button
           type="button"
@@ -135,86 +148,133 @@ export function MapPage() {
           onClick={() => setViewMode('interactive')}
           aria-pressed={viewMode === 'interactive'}
         >
-          <span className="switcher-icon" aria-hidden="true">🌲</span>
-          <span>الخريطة التفاعلية الشجرية</span>
+          <span>الخريطة التفاعلية</span>
         </button>
       </nav>
 
       {viewMode === 'visual' ? (
-        <section className="visual-maps-section" aria-labelledby="visual-maps-title">
-          <div className="section-intro">
-            <div>
-              <p className="eyebrow">استذكار بصري عالي الدقة</p>
-              <h2 id="visual-maps-title">خرائط ذهنية وتأطيرية للمراجعة السريعة</h2>
-            </div>
-            <p>انقر على أي خريطة لمعاينتها بكامل الشاشة مع إمكانية التكبير والتصغير، أو حمّلها مباشرة للاحتفاظ بها والمراجعة دون إنترنت.</p>
-          </div>
-
-          <div className="visual-maps-grid">
-            {visualMaps.map((map, index) => (
-              <article className="visual-map-card" key={map.id}>
-                <div
-                  className="visual-map-card__preview"
+        <section className="visual-maps-section" aria-label="الخرائط المصورة">
+          {/* Main Visual Map Viewer / Slider */}
+          <div className="map-viewer-container">
+            <header className="map-viewer-header">
+              <div className="map-viewer-title">
+                <span className="map-viewer-badge">{currentMap.badge}</span>
+                <h3>{currentMap.title}</h3>
+              </div>
+              <div className="map-viewer-actions">
+                <button
+                  type="button"
+                  className="button button--small button--outline"
                   onClick={() => {
-                    setActiveLightboxIndex(index);
+                    setIsFullscreen(true);
                     setZoomLevel(1);
                   }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setActiveLightboxIndex(index);
-                      setZoomLevel(1);
-                    }
-                  }}
-                  aria-label={`معاينة وتكبير ${map.title}`}
                 >
-                  <img src={map.imageSrc} alt={map.title} loading="lazy" />
-                  <div className="visual-map-card__overlay">
-                    <span className="overlay-badge">
-                      <span aria-hidden="true">🔍</span> انقر للمعاينة والتكبير
-                    </span>
-                  </div>
-                </div>
+                  ملء الشاشة
+                </button>
+                <a
+                  href={currentMap.imageSrc}
+                  download={currentMap.fileName}
+                  className="button button--small button--navy"
+                  title="تحميل بجودة كاملة"
+                >
+                  تحميل الخريطة
+                </a>
+              </div>
+            </header>
 
-                <div className="visual-map-card__content">
-                  <div className="card-topline">
-                    <span className="card-number"><bdi>{map.number}</bdi></span>
-                    <span className="card-badge">{map.badge}</span>
-                  </div>
-                  <h3>{map.title}</h3>
-                  <p className="card-desc">{map.description}</p>
+            <div
+              className="map-viewer-stage"
+              onClick={() => {
+                setIsFullscreen(true);
+                setZoomLevel(1);
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsFullscreen(true);
+                }
+              }}
+              aria-label={`تكبير ${currentMap.title}`}
+            >
+              <button
+                type="button"
+                className="map-stage-nav-btn map-stage-nav-btn--prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrev();
+                }}
+                aria-label="الخريطة السابقة"
+                title="الخريطة السابقة"
+              >
+                ›
+              </button>
 
-                  <div className="card-chips" aria-label="أهم ما تغطيه الخريطة">
-                    {map.highlights.map((h) => (
-                      <span className="card-chip" key={h}>{h}</span>
-                    ))}
-                  </div>
+              <img src={currentMap.imageSrc} alt={currentMap.title} />
 
-                  <div className="card-actions">
+              <button
+                type="button"
+                className="map-stage-nav-btn map-stage-nav-btn--next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNext();
+                }}
+                aria-label="الخريطة التالية"
+                title="الخريطة التالية"
+              >
+                ‹
+              </button>
+
+              <div className="stage-overlay">
+                <span className="stage-overlay-text">انقر للتكبير بكامل الشاشة</span>
+              </div>
+            </div>
+
+            <footer className="map-viewer-footer">
+              <button
+                type="button"
+                className="button button--outline button--small"
+                onClick={handlePrev}
+                aria-label="الخريطة السابقة"
+              >
+                الخريطة السابقة
+              </button>
+
+              <div className="map-viewer-center-ctrls">
+                <div className="map-viewer-dots" role="tablist" aria-label="اختيار الخريطة">
+                  {visualMaps.map((map, idx) => (
                     <button
+                      key={map.id}
                       type="button"
-                      className="button button--navy button--small"
+                      role="tab"
+                      aria-selected={idx === currentMapIndex}
+                      aria-label={map.title}
+                      className={`map-viewer-dot ${idx === currentMapIndex ? 'map-viewer-dot--active' : ''}`}
                       onClick={() => {
-                        setActiveLightboxIndex(index);
+                        setCurrentMapIndex(idx);
                         setZoomLevel(1);
                       }}
-                    >
-                      معاينة وتكبير <span aria-hidden="true">🔍</span>
-                    </button>
-                    <a
-                      href={map.imageSrc}
-                      download={map.fileName}
-                      className="button button--outline button--small download-btn"
-                      title={`تحميل ${map.title}`}
-                    >
-                      تحميل الخريطة <span aria-hidden="true">📥</span>
-                    </a>
-                  </div>
+                    />
+                  ))}
                 </div>
-              </article>
-            ))}
+                <span className="map-viewer-counter">
+                  خريطة <bdi>{currentMapIndex + 1}</bdi> من <bdi>{visualMaps.length}</bdi>
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="button button--outline button--small"
+                onClick={handleNext}
+                aria-label="الخريطة التالية"
+              >
+                الخريطة التالية
+              </button>
+            </footer>
           </div>
         </section>
       ) : (
@@ -266,27 +326,27 @@ export function MapPage() {
           )}
 
           <p className="map-access-note">
-            <span aria-hidden="true">ⓘ</span> الخريطة مكتوبة كنص وأزرار قابلة للتشغيل بلوحة المفاتيح؛ لا يعتمد التفاعل على رسم أو لون وحده.
+            الخريطة مكتوبة كنص وأزرار قابلة للتشغيل بلوحة المفاتيح؛ لا يعتمد التفاعل على رسم أو لون وحده.
           </p>
         </section>
       )}
 
-      {/* Lightbox Modal */}
-      {activeLightboxMap && (
+      {/* Fullscreen Lightbox Modal */}
+      {isFullscreen && (
         <div
           className="map-lightbox"
           role="dialog"
           aria-modal="true"
-          aria-label={activeLightboxMap.title}
+          aria-label={currentMap.title}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setActiveLightboxIndex(null);
+            if (e.target === e.currentTarget) setIsFullscreen(false);
           }}
         >
           <div className="map-lightbox__dialog">
             <header className="map-lightbox__header">
               <div className="map-lightbox__title">
-                <span className="map-lightbox__badge">{activeLightboxMap.badge}</span>
-                <h3>{activeLightboxMap.title}</h3>
+                <span className="map-lightbox__badge">{currentMap.badge}</span>
+                <h3>{currentMap.title}</h3>
               </div>
               <div className="map-lightbox__controls">
                 <div className="zoom-controls">
@@ -323,17 +383,17 @@ export function MapPage() {
                   )}
                 </div>
                 <a
-                  href={activeLightboxMap.imageSrc}
-                  download={activeLightboxMap.fileName}
+                  href={currentMap.imageSrc}
+                  download={currentMap.fileName}
                   className="button button--outline button--small lightbox-download"
                   title="تحميل بجودة كاملة"
                 >
-                  تحميل 📥
+                  تحميل الخريطة
                 </a>
                 <button
                   type="button"
                   className="map-lightbox__close"
-                  onClick={() => setActiveLightboxIndex(null)}
+                  onClick={() => setIsFullscreen(false)}
                   aria-label="إغلاق المعاينة"
                   title="إغلاق (Esc)"
                 >
@@ -356,7 +416,7 @@ export function MapPage() {
                   else setZoomLevel((z) => Math.min(z + 0.5, 2.5));
                 }}
               >
-                <img src={activeLightboxMap.imageSrc} alt={activeLightboxMap.title} />
+                <img src={currentMap.imageSrc} alt={currentMap.title} />
               </div>
             </div>
 
@@ -364,23 +424,19 @@ export function MapPage() {
               <button
                 type="button"
                 className="button button--outline button--small"
-                onClick={() => {
-                  setActiveLightboxIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : visualMaps.length - 1));
-                  setZoomLevel(1);
-                }}
+                onClick={handlePrev}
+                aria-label="الخريطة السابقة"
               >
                 ← الخريطة السابقة
               </button>
               <span className="map-lightbox__indicator">
-                خريطة <bdi>{(activeLightboxIndex ?? 0) + 1}</bdi> من <bdi>{visualMaps.length}</bdi>
+                خريطة <bdi>{currentMapIndex + 1}</bdi> من <bdi>{visualMaps.length}</bdi>
               </span>
               <button
                 type="button"
                 className="button button--outline button--small"
-                onClick={() => {
-                  setActiveLightboxIndex((prev) => (prev !== null && prev < visualMaps.length - 1 ? prev + 1 : 0));
-                  setZoomLevel(1);
-                }}
+                onClick={handleNext}
+                aria-label="الخريطة التالية"
               >
                 الخريطة التالية →
               </button>

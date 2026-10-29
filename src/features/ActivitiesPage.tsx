@@ -247,40 +247,13 @@ type HubTab = 'interactive' | 'flashcards' | 'quiz' | 'bac';
 interface HubTabItem {
   id: HubTab;
   label: string;
-  badge: string;
-  icon: string;
-  description: string;
 }
 
 const hubTabs: HubTabItem[] = [
-  {
-    id: 'interactive',
-    label: 'الأنشطة التطبيقية',
-    badge: '4 أنشطة',
-    icon: '🎯',
-    description: 'صنّف الأمثلة، وطابق العقوبات، وقارن بينها، وأكمل الفراغات مع التغذية الراجعة الفورية.',
-  },
-  {
-    id: 'flashcards',
-    label: 'البطاقات الذكية',
-    badge: '20 بطاقة',
-    icon: '🗂️',
-    description: 'استرجاع نشط وسريع من الذاكرة مع إمكانية التقليب، والخلط، وتصنيف البطاقات المتقنة.',
-  },
-  {
-    id: 'quiz',
-    label: 'اختبر فهمك',
-    badge: '20 سؤالاً',
-    icon: '📝',
-    description: 'تقويم ذاتي شامل بنمطي التدريب الفوري مع التفسير والتعليل، ونمط الاختبار الزمني مع النتيجة.',
-  },
-  {
-    id: 'bac',
-    label: 'تدريبات البكالوريا',
-    badge: '7 تطبيقات',
-    icon: '🎓',
-    description: 'تطبيقات وأسئلة امتحانات البكالوريا الرسمية المنهجية مع كشف الإجابات النموذجية وسلم التنقيط.',
-  },
+  { id: 'interactive', label: 'الأنشطة التطبيقية' },
+  { id: 'flashcards', label: 'بطاقات المراجعة' },
+  { id: 'quiz', label: 'اختبر نفسك' },
+  { id: 'bac', label: 'تدريبات للبكالوريا' },
 ];
 
 export function ActivitiesPage() {
@@ -303,7 +276,7 @@ export function ActivitiesPage() {
       <PageHeading
         eyebrow="التطبيق والممارسة والتقويم"
         title="الأنشطة والتقويم"
-        description="مركز تطبيقي متكامل يجمع الأنشطة التفاعلية، البطاقات الذكية، اختبار الفهم، وتطبيقات البكالوريا في مكان واحد."
+        description="مركز تطبيقي يجمع الأنشطة التطبيقية، بطاقات المراجعة، اختبر نفسك، وتدريبات للبكالوريا في مكان واحد."
       />
 
       <nav className="hub-nav-tabs" role="tablist" aria-label="أقسام الأنشطة والتقويم">
@@ -316,9 +289,7 @@ export function ActivitiesPage() {
             className={`hub-tab-btn ${activeHubTab === hub.id ? 'hub-tab-btn--active' : ''}`}
             onClick={() => setHubTab(hub.id)}
           >
-            <span className="hub-tab-icon" aria-hidden="true">{hub.icon}</span>
             <span className="hub-tab-label">{hub.label}</span>
-            <span className="hub-tab-badge">{hub.badge}</span>
           </button>
         ))}
       </nav>
