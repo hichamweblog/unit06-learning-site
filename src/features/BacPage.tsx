@@ -1,10 +1,17 @@
 import { studentPracticeQuestions } from '../data';
 import { PageHeading } from '../components/PageHeading';
 
-export function BacPage() {
+export function BacPage({ embedded }: { embedded?: boolean } = {}) {
   return (
-    <div className="page-wrap inner-page bac-page">
-      <PageHeading eyebrow="مراجعة تطبيقية" title="تدرّب على أسئلة الوحدة" description="حاول الإجابة بنفسك، ثم افتح الإجابة النموذجية للمراجعة." action={<button className="button button--outline print-button" type="button" onClick={() => window.print()}>طباعة الصفحة <span aria-hidden="true">⎙</span></button>} />
+    <div className={`bac-page${embedded ? ' bac-page--embedded' : ' page-wrap inner-page'}`}>
+      {!embedded && (
+        <PageHeading
+          eyebrow="مراجعة تطبيقية"
+          title="تدرّب على أسئلة الوحدة"
+          description="حاول الإجابة بنفسك، ثم افتح الإجابة النموذجية للمراجعة."
+          action={<button className="button button--outline print-button" type="button" onClick={() => window.print()}>طباعة الصفحة <span aria-hidden="true">⎙</span></button>}
+        />
+      )}
       <div className="practice-overview"><span className="practice-overview__count"><bdi>{studentPracticeQuestions.length}</bdi> تطبيقًا</span><p>ابدأ بما تعرفه، ثم راجع النقاط التي تحتاج إلى تثبيت.</p></div>
       <section className="practice-list" aria-label="أسئلة وتطبيقات الوحدة">
         {studentPracticeQuestions.map((question, index) => (

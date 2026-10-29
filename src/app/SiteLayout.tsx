@@ -6,11 +6,8 @@ import { StorageNotice } from '../components/StorageNotice';
 
 const navigation = [
   { to: '/learn', label: 'الدرس' },
-  { to: '/map', label: 'الخريطة' },
-  { to: '/activities', label: 'الأنشطة' },
-  { to: '/quiz', label: 'الاختبار' },
-  { to: '/flashcards', label: 'البطاقات' },
-  { to: '/bac', label: 'تدريب الوحدة' },
+  { to: '/map', label: 'الخرائط الذهنية' },
+  { to: '/activities', label: 'الأنشطة والتقويم', matches: ['/activities', '/quiz', '/flashcards', '/bac'] },
 ];
 
 function getInitialTheme(): 'light' | 'dark' {
@@ -59,11 +56,14 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           </Link>
 
           <nav id="primary-navigation" className={`primary-navigation ${menuOpen ? 'primary-navigation--open' : ''}`} aria-label="التنقل الرئيسي">
-            {navigation.map((item) => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}>
-                {item.label}
-              </NavLink>
-            ))}
+            {navigation.map((item) => {
+              const isMatched = location.pathname.startsWith(item.to) || (item.matches && item.matches.some((m) => location.pathname.startsWith(m)));
+              return (
+                <NavLink key={item.to} to={item.to} className={`nav-link${isMatched ? ' nav-link--active' : ''}`}>
+                  {item.label}
+                </NavLink>
+              );
+            })}
           </nav>
 
           <div className="site-header__controls">

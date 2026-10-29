@@ -1,8 +1,12 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { unitContent } from '../data';
 import { PageHeading } from '../components/PageHeading';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { Feedback } from '../components/Feedback';
+import { FlashcardsPage } from './FlashcardsPage';
+import { QuizPage } from './QuizPage';
+import { BacPage } from './BacPage';
 
 type ActivityTab = 'classify' | 'match' | 'compare' | 'fill';
 type ClassificationItem = { prompt: string; answer: 'وقائي' | 'علاجي/عقابي'; explanation: string };
@@ -238,22 +242,153 @@ function FillBlankActivity() {
   );
 }
 
+type HubTab = 'interactive' | 'flashcards' | 'quiz' | 'bac';
+
+interface HubTabItem {
+  id: HubTab;
+  label: string;
+  badge: string;
+  icon: string;
+  description: string;
+}
+
+const hubTabs: HubTabItem[] = [
+  {
+    id: 'interactive',
+    label: 'الأنشطة التطبيقية',
+    badge: '4 أنشطة',
+    icon: '🎯',
+    description: 'صنّف الأمثلة، وطابق العقوبات، وقارن بينها، وأكمل الفراغات مع التغذية الراجعة الفورية.',
+  },
+  {
+    id: 'flashcards',
+    label: 'البطاقات الذكية',
+    badge: '20 بطاقة',
+    icon: '🗂️',
+    description: 'استرجاع نشط وسريع من الذاكرة مع إمكانية التقليب، والخلط، وتصنيف البطاقات المتقنة.',
+  },
+  {
+    id: 'quiz',
+    label: 'اختبر فهمك',
+    badge: '20 سؤالاً',
+    icon: '📝',
+    description: 'تقويم ذاتي شامل بنمطي التدريب الفوري مع التفسير والتعليل، ونمط الاختبار الزمني مع النتيجة.',
+  },
+  {
+    id: 'bac',
+    label: 'تدريبات البكالوريا',
+    badge: '7 تطبيقات',
+    icon: '🎓',
+    description: 'تطبيقات وأسئلة امتحانات البكالوريا الرسمية المنهجية مع كشف الإجابات النموذجية وسلم التنقيط.',
+  },
+];
+
 export function ActivitiesPage() {
-  const [activeTab, setActiveTab] = useState<ActivityTab>('classify');
-  const active = tabs.find((tab) => tab.id === activeTab) ?? tabs[0]!;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const activeHubTab: HubTab = (rawTab && ['interactive', 'flashcards', 'quiz', 'bac'].includes(rawTab))
+    ? (rawTab as HubTab)
+    : 'interactive';
+
+  const [activeActivityTab, setActiveActivityTab] = useState<ActivityTab>('classify');
+
+  function setHubTab(tab: HubTab) {
+    setSearchParams({ tab });
+  }
+
+  const activeActivity = tabs.find((tab) => tab.id === activeActivityTab) ?? tabs[0]!;
+
   return (
-    <div className="page-wrap inner-page activities-page">
-      <PageHeading eyebrow="تعلّم بالممارسة" title="أنشطة تطبيقية" description="صنّف الأمثلة، وطابق العقوبات، وقارن بينها، أو أكمل الفراغات. تظهر التغذية الراجعة بعد إجابتك." />
-      <div className="activity-tabs" role="tablist" aria-label="أنواع الأنشطة">
-        {tabs.map((tab) => <button id={`activity-tab-${tab.id}`} key={tab.id} role="tab" tabIndex={activeTab === tab.id ? 0 : -1} aria-selected={activeTab === tab.id} aria-controls="activity-panel" className={`activity-tab${activeTab === tab.id ? ' activity-tab--active' : ''}`} type="button" onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); const currentIndex = tabs.findIndex((item) => item.id === tab.id); const direction = event.key === 'ArrowLeft' ? 1 : -1; const nextTab = tabs[(currentIndex + direction + tabs.length) % tabs.length]; if (nextTab) { setActiveTab(nextTab.id); document.getElementById(`activity-tab-${nextTab.id}`)?.focus(); } } }} onClick={() => setActiveTab(tab.id)}><span className="activity-tab__number"><bdi>{tab.number}</bdi></span><span>{tab.label}</span></button>)}
+    <div className="page-wrap inner-page activities-hub-page">
+      <PageHeading
+        eyebrow="التطبيق والممارسة والتقويم"
+        title="الأنشطة والتقويم"
+        description="مركز تطبيقي متكامل يجمع الأنشطة التفاعلية، البطاقات الذكية، اختبار الفهم، وتطبيقات البكالوريا في مكان واحد."
+      />
+
+      <nav className="hub-nav-tabs" role="tablist" aria-label="أقسام الأنشطة والتقويم">
+        {hubTabs.map((hub) => (
+          <button
+            key={hub.id}
+            role="tab"
+            type="button"
+            aria-selected={activeHubTab === hub.id}
+            className={`hub-tab-btn ${activeHubTab === hub.id ? 'hub-tab-btn--active' : ''}`}
+            onClick={() => setHubTab(hub.id)}
+          >
+            <span className="hub-tab-icon" aria-hidden="true">{hub.icon}</span>
+            <span className="hub-tab-label">{hub.label}</span>
+            <span className="hub-tab-badge">{hub.badge}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="hub-tab-content">
+        {activeHubTab === 'interactive' && (
+          <section className="interactive-hub-section" aria-label="الأنشطة التطبيقية التفاعلية">
+            <div className="activity-tabs" role="tablist" aria-label="أنواع الأنشطة">
+              {tabs.map((tab) => (
+                <button
+                  id={`activity-tab-${tab.id}`}
+                  key={tab.id}
+                  role="tab"
+                  tabIndex={activeActivityTab === tab.id ? 0 : -1}
+                  aria-selected={activeActivityTab === tab.id}
+                  aria-controls="activity-panel"
+                  className={`activity-tab${activeActivityTab === tab.id ? ' activity-tab--active' : ''}`}
+                  type="button"
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                      event.preventDefault();
+                      const currentIndex = tabs.findIndex((item) => item.id === tab.id);
+                      const direction = event.key === 'ArrowLeft' ? 1 : -1;
+                      const nextTab = tabs[(currentIndex + direction + tabs.length) % tabs.length];
+                      if (nextTab) {
+                        setActiveActivityTab(nextTab.id);
+                        document.getElementById(`activity-tab-${nextTab.id}`)?.focus();
+                      }
+                    }
+                  }}
+                  onClick={() => setActiveActivityTab(tab.id)}
+                >
+                  <span className="activity-tab__number"><bdi>{tab.number}</bdi></span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <section id="activity-panel" className="activity-panel" role="tabpanel" aria-labelledby={`activity-tab-${activeActivityTab}`}>
+              <header className="activity-panel__heading">
+                <p className="eyebrow">النشاط {activeActivity.number}</p>
+                <h2 id="activity-heading">{activeActivity.label}</h2>
+                <p>{activeActivity.description}</p>
+              </header>
+              {activeActivityTab === 'classify' && <ClassificationActivity key="classification" />}
+              {activeActivityTab === 'match' && <MatchingActivity key="matching" />}
+              {activeActivityTab === 'compare' && <ComparisonActivity key="comparison" />}
+              {activeActivityTab === 'fill' && <FillBlankActivity key="fill" />}
+            </section>
+          </section>
+        )}
+
+        {activeHubTab === 'flashcards' && (
+          <section className="hub-subpage-container" aria-label="البطاقات التعليمية">
+            <FlashcardsPage embedded />
+          </section>
+        )}
+
+        {activeHubTab === 'quiz' && (
+          <section className="hub-subpage-container" aria-label="اختبر فهمك">
+            <QuizPage embedded />
+          </section>
+        )}
+
+        {activeHubTab === 'bac' && (
+          <section className="hub-subpage-container" aria-label="تدريبات البكالوريا">
+            <BacPage embedded />
+          </section>
+        )}
       </div>
-      <section id="activity-panel" className="activity-panel" role="tabpanel" aria-labelledby={`activity-tab-${activeTab}`}>
-        <header className="activity-panel__heading"><p className="eyebrow">النشاط {active.number}</p><h2 id="activity-heading">{active.label}</h2><p>{active.description}</p></header>
-        {activeTab === 'classify' && <ClassificationActivity key="classification" />}
-        {activeTab === 'match' && <MatchingActivity key="matching" />}
-        {activeTab === 'compare' && <ComparisonActivity key="comparison" />}
-        {activeTab === 'fill' && <FillBlankActivity key="fill" />}
-      </section>
     </div>
   );
 }

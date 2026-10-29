@@ -5,15 +5,39 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ResetProgressButton } from '../components/ResetProgressButton';
 
 const pathways = [
-  { number: '01', title: 'تعلّم', copy: 'اقرأ المحاور الأربعة على مهل، مع تعريفات وشواهد وجداول قابلة للمراجعة.', to: '/learn', action: 'افتح الدرس', tone: 'navy' },
-  { number: '02', title: 'استكشف', copy: 'تتبّع فروع الوحدة الستة، وانتقل من الخريطة إلى موضوع الدرس المرتبط.', to: '/map', action: 'افتح الخريطة', tone: 'copper' },
-  { number: '03', title: 'تدرّب', copy: 'صنّف الأمثلة، وطابق الجريمة بنوع العقوبة، وقارن بين الأنواع.', to: '/activities', action: 'ابدأ نشاطًا', tone: 'sage' },
-  { number: '04', title: 'قيّم نفسك', copy: 'جرّب أسئلة الاختبار، ثم راجع التفسير والبطاقات وتطبيقات الوحدة.', to: '/quiz', action: 'ابدأ الاختبار', tone: 'ink' },
+  {
+    number: '01',
+    title: 'الدرس والمفاهيم',
+    copy: 'اقرأ محاور الوحدة الأربعة، مع شواهد القرآن والسنة، والتعريفات، وجداول المقارنة الشاملة.',
+    to: '/learn',
+    action: 'افتح الدرس',
+    tone: 'navy',
+  },
+  {
+    number: '02',
+    title: 'الخرائط الذهنية',
+    copy: 'استحضر العلاقات والروابط بصرياً عبر الخريطة التفاعلية الشجرية و3 خرائط مصورة عالية الدقة.',
+    to: '/map',
+    action: 'استكشف الخرائط',
+    tone: 'copper',
+  },
+  {
+    number: '03',
+    title: 'الأنشطة والتقويم الشامل',
+    copy: 'مركز تطبيقي موحد يجمع الأنشطة التطبيقية، البطاقات الذكية، اختبار الفهم، وتدريبات البكالوريا.',
+    to: '/activities',
+    action: 'ادخل مركز الأنشطة',
+    tone: 'sage',
+  },
 ];
 
 const routeLabels: Record<string, string> = {
-  '/learn': 'الدرس', '/map': 'الخريطة المفاهيمية', '/activities': 'الأنشطة', '/quiz': 'الاختبار',
-  '/flashcards': 'البطاقات', '/bac': 'تدريب الوحدة',
+  '/learn': 'الدرس',
+  '/map': 'الخرائط الذهنية',
+  '/activities': 'الأنشطة والتقويم',
+  '/quiz': 'اختبر فهمك',
+  '/flashcards': 'البطاقات التعليمية',
+  '/bac': 'تدريبات البكالوريا',
 };
 
 export function HomePage() {
@@ -38,7 +62,8 @@ export function HomePage() {
           <p className="hero-panel__lead">تعرّف إلى مفاهيم الانحراف والجريمة، واستكشف أساليب الوقاية والعقوبات، ثم طبّق ما تعلّمته في أنشطة وأسئلة قصيرة.</p>
           <div className="hero-panel__actions">
             <Link className="button button--copper" to="/learn">ابدأ التعلم <span aria-hidden="true">←</span></Link>
-            <Link className="button button--hero-outline" to="/map">استكشف الخريطة</Link>
+            <Link className="button button--hero-outline" to="/map">الخرائط الذهنية</Link>
+            <Link className="button button--hero-outline" to="/activities">الأنشطة والتقويم</Link>
           </div>
         </div>
         <div className="hero-panel__art" aria-hidden="true">

@@ -5,7 +5,7 @@ import { shuffleItems } from '../lib/quiz';
 import { PageHeading } from '../components/PageHeading';
 import { ProgressBar } from '../components/ProgressBar';
 
-export function FlashcardsPage() {
+export function FlashcardsPage({ embedded }: { embedded?: boolean } = {}) {
   const { progress, markFlashcard } = useProgress();
   const [cards, setCards] = useState(unitContent.flashcards);
   const [filter, setFilter] = useState<'all' | 'review' | 'unrated'>('all');
@@ -89,8 +89,14 @@ export function FlashcardsPage() {
   }, [safeIndex, deck.length, revealed]);
 
   return (
-    <div className="page-wrap inner-page flashcards-page">
-      <PageHeading eyebrow={`استرجاع نشط · ${unitContent.flashcards.length} بطاقة`} title="البطاقات التعليمية" description="اقرأ السؤال وحاول الاسترجاع من الذاكرة، ثم اكشف الإجابة وسجّل تقدّمك." />
+    <div className={`flashcards-page${embedded ? ' flashcards-page--embedded' : ' page-wrap inner-page'}`}>
+      {!embedded && (
+        <PageHeading
+          eyebrow={`استرجاع نشط · ${unitContent.flashcards.length} بطاقة`}
+          title="البطاقات التعليمية"
+          description="اقرأ السؤال وحاول الاسترجاع من الذاكرة، ثم اكشف الإجابة وسجّل تقدّمك."
+        />
+      )}
       <div className="flashcards-toolbar">
         <ProgressBar value={masteredCount} max={unitContent.flashcards.length} label="البطاقات التي علّمتها متقنة" />
         <div className="flashcard-filter">

@@ -113,7 +113,7 @@ function ResultView({ mode, questions, answers, elapsedTime, onRetry }: { mode: 
   );
 }
 
-export function QuizPage() {
+export function QuizPage({ embedded }: { embedded?: boolean } = {}) {
   const { recordQuizScore } = useProgress();
   const [mode, setMode] = useState<QuizMode | null>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -212,8 +212,14 @@ export function QuizPage() {
   const isLast = index === questions.length - 1;
 
   return (
-    <div className="page-wrap inner-page quiz-page">
-      <PageHeading eyebrow="تقويم ذاتي · 20 سؤالًا" title="اختبر فهمك" description="اختر وضع التدريب للحصول على تغذية راجعة بعد كل إجابة، أو اختبر نفسك ثم راجع النتيجة في النهاية." />
+    <div className={`quiz-page${embedded ? ' quiz-page--embedded' : ' page-wrap inner-page'}`}>
+      {!embedded && (
+        <PageHeading
+          eyebrow="تقويم ذاتي · 20 سؤالًا"
+          title="اختبر فهمك"
+          description="اختر وضع التدريب للحصول على تغذية راجعة بعد كل إجابة، أو اختبر نفسك ثم راجع النتيجة في النهاية."
+        />
+      )}
       {!mode && <ModeSelection onStart={start} />}
       {mode && !finished && current && (
         <section className="quiz-workspace" aria-labelledby="question-text">
