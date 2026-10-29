@@ -133,6 +133,15 @@ export function QuizPage() {
     return () => clearInterval(id);
   }, [mode, finished]);
 
+  useEffect(() => {
+    if (!mode || finished) return;
+    const motionOk = !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const target = document.querySelector('.question-card') || document.querySelector('.quiz-workspace');
+    if (target) {
+      target.scrollIntoView({ behavior: motionOk ? 'smooth' : 'instant', block: 'start' });
+    }
+  }, [index, mode, finished]);
+
   function choose(optionId: string) {
     if (!current || currentAnswer?.confirmed) return;
     setAnswers((currentAnswers) => ({ ...currentAnswers, [current.id]: { selectedOptionId: optionId, confirmed: false } }));

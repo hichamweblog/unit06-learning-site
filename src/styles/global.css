@@ -3249,6 +3249,7 @@ img, svg {
 }
 
 .question-card {
+  scroll-margin-top: 90px;
   padding: clamp(20px, 4.2vw, 36px);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
@@ -3496,15 +3497,16 @@ img, svg {
   margin: 0 auto 12px;
   border-color: rgba(229, 195, 157, 0.58);
   background: rgba(255, 255, 255, 0.08);
-  color: #e7c59b;
+  color: #fed7aa !important;
 }
 
 .quiz-results__hero .eyebrow {
-  color: #e5bd8e;
+  color: #fed7aa !important;
 }
 
 .quiz-results__hero h2 {
   margin: 0;
+  color: #ffffff !important;
   font-size: clamp(25px, 4vw, 36px);
   font-weight: 800;
 }
@@ -3526,17 +3528,18 @@ img, svg {
 .score-ring strong {
   font-size: 24px;
   line-height: 1.25;
+  color: #ffffff !important;
 }
 
 .score-ring span {
-  color: #dce2e5;
-  font-size: 11px;
+  color: #f1f5f9 !important;
+  font-size: 12px;
 }
 
 .quiz-results__sub {
   margin: 8px 0 0;
-  color: #d5e0e8;
-  font-size: 13px;
+  color: #f1f5f9 !important;
+  font-size: 14px;
 }
 
 .quiz-results__body {
@@ -3760,14 +3763,14 @@ img, svg {
 .flashcard-scene {
   position: relative;
   width: 100%;
-  min-height: 330px;
+  min-height: clamp(380px, 48vh, 460px);
   perspective: 1200px;
 }
 
 .flashcard {
   position: relative;
   width: 100%;
-  min-height: 330px;
+  min-height: clamp(380px, 48vh, 460px);
   cursor: pointer;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3786,7 +3789,7 @@ img, svg {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 38px clamp(24px, 6vw, 68px);
+  padding: 0;
   border-radius: var(--radius-lg);
   border: 1.5px solid rgba(213, 149, 74, 0.45);
   backface-visibility: hidden;
@@ -3794,6 +3797,21 @@ img, svg {
   text-align: center;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+}
+
+.flashcard__body {
+  width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px clamp(16px, 4vw, 36px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  scrollbar-width: thin;
+  scrollbar-color: var(--copper) transparent;
 }
 
 .flashcard__face--front {
@@ -3842,8 +3860,8 @@ img, svg {
 }
 
 .flashcard__face .eyebrow {
-  margin: 0 0 16px;
-  font-size: 14.5px;
+  margin: 0 0 12px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--copper-deep);
 }
@@ -3857,8 +3875,8 @@ img, svg {
   max-width: 640px;
   margin: 0;
   color: var(--navy);
-  font-size: clamp(22px, 3.8vw, 30px);
-  line-height: 1.8;
+  font-size: clamp(18px, 3.4vw, 24px);
+  line-height: 1.65;
   white-space: pre-line;
   font-weight: 800;
 }
@@ -3868,8 +3886,8 @@ img, svg {
 }
 
 .flashcard__hint {
-  margin-top: 18px;
-  font-size: 13.5px;
+  margin-top: 14px;
+  font-size: 13px;
   color: var(--muted);
   font-weight: 700;
   opacity: 0.85;
@@ -4622,7 +4640,7 @@ code {
     justify-content: space-between;
   }
   .flashcard-scene, .flashcard {
-    min-height: 280px;
+    min-height: clamp(360px, 50vh, 440px);
   }
   .practice-overview {
     align-items: flex-start;
@@ -4811,10 +4829,17 @@ code {
     padding: 16px;
   }
   .flashcard-scene, .flashcard {
-    min-height: 260px;
+    min-height: clamp(380px, 54vh, 460px);
   }
   .flashcard__face {
-    padding-inline: 18px;
+    padding: 0;
+  }
+  .flashcard__body {
+    padding: 22px 16px;
+  }
+  .flashcard__face h2 {
+    font-size: clamp(16.5px, 4.4vw, 19.5px);
+    line-height: 1.6;
   }
   .flashcard-navigation {
     gap: 6px;

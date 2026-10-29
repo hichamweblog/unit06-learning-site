@@ -120,14 +120,18 @@ export function FlashcardsPage() {
             aria-label={revealed ? 'انقر للعودة إلى السؤال' : 'انقر لكشف الإجابة'}
           >
             <div className="flashcard__face flashcard__face--front">
-              <p className="eyebrow">سؤال للمراجعة</p>
-              <h2>{current.front}</h2>
-              <span className="flashcard__hint" aria-hidden="true">انقر على البطاقة لكشف الإجابة ↻</span>
+              <div className="flashcard__body">
+                <p className="eyebrow">سؤال للمراجعة</p>
+                <h2>{current.front}</h2>
+                <span className="flashcard__hint" aria-hidden="true">انقر على البطاقة لكشف الإجابة ↻</span>
+              </div>
             </div>
             <div className="flashcard__face flashcard__face--back">
-              <p className="eyebrow">الإجابة</p>
-              <h2>{current.back}</h2>
-              <span className="flashcard__hint" aria-hidden="true">انقر على البطاقة للعودة للسؤال ↺</span>
+              <div className="flashcard__body">
+                <p className="eyebrow">الإجابة</p>
+                <h2>{current.back}</h2>
+                <span className="flashcard__hint" aria-hidden="true">انقر على البطاقة للعودة للسؤال ↺</span>
+              </div>
             </div>
           </div>
         </div>
