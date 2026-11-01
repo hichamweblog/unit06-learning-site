@@ -6261,25 +6261,26 @@ code {
 
 
 /* ============================================================================
-   NEW HOME PAGE REDESIGN: METHODOLOGY BLUEPRINT, ENHANCED HUBS & 5 NECESSITIES
+   NEW HOME PAGE REDESIGN: CLEAN HERO, 3-PILLAR LEARNING HUBS & PROGRESS PANEL
    ============================================================================ */
 
-/* 1. Enhanced Hero Panel */
-.hero-panel--enhanced {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 1fr);
-  gap: 40px;
-  align-items: center;
-  padding: clamp(32px, 4.5vw, 56px);
+/* 1. Clean Hero Panel */
+.hero-panel--clean {
+  display: block;
+  min-height: unset;
+  padding: clamp(36px, 5.5vw, 64px) clamp(24px, 5vw, 56px);
   margin-bottom: 48px;
-  min-height: 480px;
+}
+
+.hero-panel__inner {
+  max-width: 860px;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  margin-bottom: 14px;
-  padding: 6px 14px;
+  margin-bottom: 16px;
+  padding: 6px 16px;
   background: rgba(213, 149, 74, 0.18);
   border: 1px solid rgba(213, 149, 74, 0.35);
   border-radius: var(--radius-pill);
@@ -6289,196 +6290,66 @@ code {
   letter-spacing: 0.02em;
 }
 
+.hero-panel--clean h1 {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.35;
+  font-weight: 800;
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hero-panel__content {
+  margin-bottom: 30px;
+}
+
+.hero-panel__lead-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fed7aa;
+}
+
+.hero-panel__objectives {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-panel__objectives li {
+  position: relative;
+  padding-right: 22px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #e5ebf1;
+}
+
+.hero-panel__objectives li::before {
+  content: "—";
+  position: absolute;
+  right: 0;
+  color: #fed7aa;
+  font-weight: 800;
+}
+
 .hero-btn-cta {
   box-shadow: 0 10px 24px rgba(194, 124, 44, 0.35);
 }
 
-.hero-metrics-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 14px;
-  margin-top: 32px;
-  padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cde0f0;
-  font-size: 13px;
-}
-
-.hero-metric-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.hero-metric-item strong {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fed7aa;
-  font-size: 13.5px;
-  font-weight: 800;
-}
-
-.hero-metric-sep {
-  opacity: 0.3;
-  color: #ffffff;
-}
-
-/* 2. Educational Islamic Methodology Blueprint Card (Replaces circle 06) */
-.hero-panel__art-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.hero-blueprint-card {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px 22px;
-  background: rgba(10, 24, 42, 0.85);
-  border: 1px solid rgba(222, 239, 248, 0.2);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-}
-
-.hero-blueprint-card__header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 12px;
-}
-
-.blueprint-tag {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fed7aa;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.blueprint-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.hero-blueprint-card__pillars {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.blueprint-pillar {
-  padding: 14px 12px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.blueprint-pillar--prevention {
-  border-top: 3px solid #d5954a;
-}
-
-.blueprint-pillar--treatment {
-  border-top: 3px solid #3d8ec4;
-}
-
-.blueprint-pillar__head {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-
-.pillar-badge {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.pillar-timing {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fed7aa;
-}
-
-.blueprint-pillar--treatment .pillar-timing {
-  color: #93c5fd;
-}
-
-.pillar-aim {
-  margin: 0 0 8px;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: #d1dbe5;
-}
-
-.pillar-points {
-  margin: 0;
-  padding-right: 14px;
-  font-size: 11px;
-  line-height: 1.6;
-  color: #cbd5e1;
-}
-
-.pillar-points li {
-  margin-bottom: 4px;
-}
-
-.pillar-points strong {
-  color: #ffffff;
-}
-
-.hero-blueprint-card__target {
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, rgba(213, 149, 74, 0.15) 0%, rgba(61, 142, 196, 0.15) 100%);
-  border: 1px solid rgba(213, 149, 74, 0.3);
-  text-align: center;
-}
-
-.target-head {
-  margin-bottom: 4px;
-}
-
-.target-tag {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fce7c8;
-  letter-spacing: 0.04em;
-}
-
-.target-summary {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: #ffffff;
-}
-
-.target-summary strong {
-  color: #fed7aa;
-}
-
-/* 3. Three Learning Hubs Grid */
+/* 2. Three Learning Hubs Grid */
 .pathway-grid--three {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 20px;
+  gap: 22px;
 }
 
 .pathway-card--enhanced {
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  min-height: 380px;
+  padding: 26px 24px;
+  min-height: 290px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   background: var(--surface);
@@ -6486,7 +6357,7 @@ code {
 }
 
 .pathway-card--enhanced:hover {
-  transform: translateY(-6px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-hover);
 }
 
@@ -6507,7 +6378,7 @@ code {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .pathway-card__step-label {
@@ -6522,7 +6393,7 @@ code {
 }
 
 .pathway-card__title {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 21px;
   font-weight: 800;
   color: var(--navy);
@@ -6533,50 +6404,18 @@ code {
 }
 
 .pathway-card__focus {
-  margin: 0 0 10px;
-  font-size: 12.5px;
+  margin: 0 0 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--muted-light);
 }
 
 .pathway-card__desc {
-  margin: 0 0 16px;
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: var(--muted);
-}
-
-.pathway-card__highlights {
   flex: 1;
-  margin-bottom: 20px;
-  padding: 12px 14px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-}
-
-.highlights-title {
-  display: block;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--ink-soft);
-  margin-bottom: 6px;
-}
-
-[data-theme="dark"] .highlights-title {
-  color: var(--ink);
-}
-
-.pathway-card__highlights ul {
-  margin: 0;
-  padding-right: 16px;
-  font-size: 12px;
-  line-height: 1.65;
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.75;
   color: var(--muted);
-}
-
-.pathway-card__highlights li {
-  margin-bottom: 4px;
 }
 
 .pathway-card__footer {
@@ -6587,115 +6426,10 @@ code {
   width: 100%;
   justify-content: center;
   font-weight: 700;
+  padding: 10px 18px;
 }
 
-/* 4. Five Necessities (الكليات الخمس) Section */
-.necessities-section {
-  margin: 0 0 58px;
-}
-
-.necessities-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.necessity-card {
-  display: flex;
-  flex-direction: column;
-  padding: 18px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.necessity-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--copper);
-  box-shadow: var(--shadow-sm);
-}
-
-.necessity-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.necessity-card__idx {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: var(--cream-deep);
-  color: var(--navy);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-[data-theme="dark"] .necessity-card__idx {
-  color: var(--copper);
-}
-
-.necessity-card__title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--navy);
-}
-
-[data-theme="dark"] .necessity-card__title {
-  color: #ffffff;
-}
-
-.necessity-card__domain {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--muted-light);
-  margin-bottom: 12px;
-}
-
-.necessity-card__penalty {
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  border-radius: var(--radius-xs);
-  background: var(--copper-pale);
-  border: 1px solid rgba(194, 124, 44, 0.2);
-}
-
-.penalty-tag {
-  display: block;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--copper-deep);
-  margin-bottom: 2px;
-}
-
-.penalty-value {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 800;
-  color: var(--navy);
-}
-
-[data-theme="dark"] .penalty-value {
-  color: #ffffff;
-}
-
-.necessity-card__wisdom {
-  flex: 1;
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
-/* 5. Modern Progress Panel */
+/* 3. Modern Progress Panel */
 .progress-panel--modern {
   margin: 0 0 54px;
   padding: 32px 28px;
@@ -6721,7 +6455,7 @@ code {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 16px 14px;
+  padding: 18px 16px;
   border-radius: var(--radius-md);
   background: var(--surface-subtle);
   border: 1px solid var(--line-subtle);
@@ -6734,7 +6468,7 @@ code {
 }
 
 .p-metric-card__value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 900;
   color: var(--navy);
   font-family: system-ui, -apple-system, sans-serif;
@@ -6820,15 +6554,8 @@ code {
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  .hero-panel--enhanced {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
   .pathway-grid--three {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-  .necessities-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .progress-dashboard__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6839,14 +6566,8 @@ code {
 }
 
 @media (max-width: 640px) {
-  .hero-blueprint-card__pillars {
-    grid-template-columns: 1fr;
-  }
   .pathway-grid--three {
     grid-template-columns: 1fr !important;
-  }
-  .necessities-grid {
-    grid-template-columns: 1fr;
   }
   .progress-dashboard__metrics {
     grid-template-columns: 1fr;
@@ -6860,3 +6581,4 @@ code {
     align-items: flex-start;
   }
 }
+
