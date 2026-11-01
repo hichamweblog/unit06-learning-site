@@ -99,9 +99,9 @@ export function HomePage() {
           </div>
 
           <h1 id="home-title">
-            منهج الإسلام
+            منهج الإسلام في محاربة
             <br className="hero-title-break" />
-            في محاربة الانحراف والجريمة
+            الانحراف والجريمة
           </h1>
 
           <div className="hero-panel__content">
