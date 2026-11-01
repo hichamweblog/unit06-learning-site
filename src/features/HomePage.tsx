@@ -98,7 +98,11 @@ export function HomePage() {
             <span>برنامج بكالوريا 2026 · مادة العلوم الإسلامية</span>
           </div>
 
-          <h1 id="home-title">{unitContent.metadata.unit_title}</h1>
+          <h1 id="home-title">
+            منهج الإسلام
+            <br className="hero-title-break" />
+            في محاربة الانحراف والجريمة
+          </h1>
 
           <div className="hero-panel__content">
             <p className="hero-panel__lead-title">وحدة تعليمية وفق التدرجات الرسمية:</p>
