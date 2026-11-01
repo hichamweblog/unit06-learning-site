@@ -5,22 +5,6 @@ import { useProgress } from '../context/useProgress';
 
 type EvaluationState = 'mastered' | 'partial' | 'review';
 
-const practiceHints: Record<string, string> = {
-  'practice-01': 'تأمل ألفاظ الحديث الثلاثة: الزنا بعد إحصان، المحاربة لله ورسوله، وقتل النفس عمداً. اربط كل واحدة بحدها ومقصدها الشرعي.',
-  'practice-02': 'فرّق بوضوح بين الجناية العمدية (القصاص والدية بديلة عند العفو) والخطأ (الدية والكفارة ولا قصاص فيه) والإتلاف المالي (التعزير).',
-  'practice-03': 'الدماء عمدًا = قصاص، الزور = تعزير يقدّره القاضي، قذف المحصنات = حدّ مقدّر (80 جلدة لحفظ العرض).',
-  'practice-04': 'تذكّر قاعدة الحدود: إذا بلغت الحاكم/القاضي وثبتت، حَرُمت الشفاعة لأن الحق العام لله تعالى غالب.',
-  'practice-05': 'ترويع الناس بالسلاح وسلب الأموال هو حد الحرابة، وعقوباتها الأربع وردت في سورة المائدة.',
-  'practice-06': 'قارن من 3 زوايا: نوع العقوبة (حدّ مقابل قصاص)، قبول العفو والشفاعة، والحق الغالب (حق الله مقابل حق الأولياء).',
-  'practice-07': 'كلاهما اعتداء على المال، لكن السرقة جريمة مقدّرة بحد شرعي بشروطها، والربا يُعاقب عليه تعزيرًا.',
-  'practice-08': 'المسكرات تغيّب العقل، والمقصد هو حفظ العقل، ونوع العقوبة حدّ شرب الخمر.',
-  'practice-09': 'المنهج الوقائي يسبق الجريمة: تقوية الإيمان والوازع الديني، والحث على العبادات ومكارم الأخلاق.',
-  'practice-10': 'التعزير عقوبة غير مقدرة شرعاً ويُفوّض تقديرها للقاضي بما يناسب زمان الجريمة ومكانها والمصلحة.',
-  'practice-11': 'الحكمة من تشريع العقوبات: حفظ النظام العام، الردع والزجر، وتطهير الجاني وتطييب نفس المجني عليه.',
-  'practice-12': 'خصائص العقوبات الأربع: الشرعية، المساواة، العدالة وشخصية العقوبة، والرحمة.',
-  'practice-13': 'العقوبة البديلة في القتل العمد عند عفو الأولياء هي الدية، ومقصد تشريع القصاص هو حفظ النفس.',
-};
-
 function getSavedEvaluations(): Record<string, EvaluationState> {
   if (typeof window === 'undefined') return {};
   try {
@@ -46,7 +30,6 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
   const [evaluations, setEvaluations] = useState<Record<string, EvaluationState>>(getSavedEvaluations);
   const [attempts, setAttempts] = useState<Record<string, string>>(getSavedAttempts);
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
-  const [hintIds, setHintIds] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<'all' | 'mastered' | 'review' | 'pending'>('all');
 
   const totalQuestions = studentPracticeQuestions.length;
@@ -86,10 +69,6 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
     setRevealedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  function toggleHint(id: string) {
-    setHintIds((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
-
   function resetEvaluations() {
     if (window.confirm('هل تريد إعادة تعيين تقييماتك لتدريبات البكالوريا؟')) {
       setEvaluations({});
@@ -114,7 +93,7 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
         <PageHeading
           eyebrow="التحضير للبكالوريا"
           title="تدريبات وتطبيقات البكالوريا"
-          description="تدرّب على أسئلة الامتحان: دوّن محاولتك، استعن بالتلميح عند الحاجة، ثم قارن مع الإجابة النموذجية وقَيّم نفسك."
+          description="تدرّب على أسئلة الامتحان: دوّن محاولتك أولاً، ثم قارنها مع الإجابة النموذجية وقَيّم مستواك."
           action={
             <button className="button button--outline print-button" type="button" onClick={() => window.print()}>
               طباعة الصفحة <span aria-hidden="true">⎙</span>
@@ -200,9 +179,7 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
             const originalIndex = studentPracticeQuestions.findIndex((q) => q.id === question.id);
             const evaluation = evaluations[question.id];
             const isRevealed = Boolean(revealedIds[question.id]);
-            const isHintOpen = Boolean(hintIds[question.id]);
             const currentAttempt = attempts[question.id] || '';
-            const hintText = practiceHints[question.id];
 
             return (
               <article
@@ -213,7 +190,7 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
                 <header className="practice-card__header">
                   <div className="practice-card__meta">
                     <span className="practice-card__number"><bdi>{String(originalIndex + 1).padStart(2, '0')}</bdi></span>
-                    <span className="practice-card__topic">{question.topic}</span>
+                    <h3 className="practice-card__title">تطبيق {originalIndex + 1}</h3>
                   </div>
                   {evaluation && (
                     <span className={`practice-status-badge practice-status-badge--${evaluation}`}>
@@ -250,38 +227,20 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
 
                   {/* Interactive Action Controls */}
                   <div className="practice-actions">
-                    {hintText && (
-                      <button
-                        type="button"
-                        className={`button button--small ${isHintOpen ? 'button--copper' : 'button--outline'}`}
-                        onClick={() => toggleHint(question.id)}
-                        aria-expanded={isHintOpen}
-                      >
-                        {isHintOpen ? 'إخفاء التلميح' : 'تلميح منهجي 💡'}
-                      </button>
-                    )}
-
                     <button
                       type="button"
                       className="button button--small button--navy"
                       onClick={() => toggleReveal(question.id)}
                       aria-expanded={isRevealed}
                     >
-                      {isRevealed ? 'إخفاء الإجابة' : 'عرض الإجابة وسلم التنقيط ←'}
+                      {isRevealed ? 'إخفاء الإجابة' : 'عرض الإجابة النموذجية ←'}
                     </button>
                   </div>
-
-                  {/* Hint Drawer */}
-                  {isHintOpen && hintText && (
-                    <div className="practice-hint-box" role="note" aria-label="تلميح للمساعدة">
-                      <strong>تلميح منهجي:</strong> {hintText}
-                    </div>
-                  )}
 
                   {/* Model Answer & Self-Grading */}
                   {isRevealed && (
                     <div className="practice-model-answer">
-                      <h3 className="practice-model-answer__title">عناصر الإجابة النموذجية المعتمدة:</h3>
+                      <h4 className="practice-model-answer__title">عناصر الإجابة النموذجية:</h4>
                       <ol className="practice-model-answer__list">
                         {question.modelAnswer.map((point) => (
                           <li key={point}>

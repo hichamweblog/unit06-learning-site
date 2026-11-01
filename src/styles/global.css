@@ -4025,15 +4025,17 @@ img, svg {
   margin: 0;
 }
 
-.practice-card__header h2 {
+.practice-card__header h2,
+.practice-card__title {
   margin: 0;
   color: var(--navy);
   font-size: 18px;
   font-weight: 800;
 }
 
-[data-theme="dark"] .practice-card__header h2 {
-  color: var(--ink);
+[data-theme="dark"] .practice-card__header h2,
+[data-theme="dark"] .practice-card__title {
+  color: #ffffff;
 }
 
 .practice-card__body {
