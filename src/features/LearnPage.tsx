@@ -59,7 +59,17 @@ function LessonSection({ index }: { index: number }) {
         <h3>عوامل قد تسهم في الانحراف</h3>
         <ul>{concepts['3_causes_of_crime'].map((cause) => <li key={cause}>{cause}</li>)}</ul>
       </aside>
-      <KnowledgeCheck id="check-concepts" key="concept-check" question="أي التعريفين يخص الجريمة؟" options={[concepts['1_definition_inhiraf'], concepts['2_definition_crime']]} answerIndex={1} explanation="الجريمة هي محظورات شرعية زجر عنها الله بحد أو قصاص أو تعزير." />
+      <KnowledgeCheck
+        id="check-concepts"
+        key="concept-check"
+        question="أي التعريفين يخص الجريمة؟"
+        options={[
+          'كل سلوك يترتب عليه انتهاك للقيم والمعايير والأعراف التي تحكم سير المجتمع.',
+          'محظورات شرعية زجر الله عنها بحد أو قصاص أو تعزير.',
+        ]}
+        answerIndex={1}
+        explanation="الجريمة هي محظورات شرعية زجر عنها الله بحد أو قصاص أو تعزير."
+      />
     </div>
   );
 

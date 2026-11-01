@@ -9,15 +9,13 @@ const branchDestinations = [
   '/learn?section=2',
   '/learn?section=3',
   '/learn?section=3',
-  '/activities?tab=bac',
 ];
 const destinationLabels = [
   'افتح محور المفاهيم الأساسية',
   'افتح محور المنهج الوقائي',
   'افتح محور المنهج العلاجي',
-  'افتح محور الخصائص والحكمة',
-  'افتح محور الخصائص والحكمة',
-  'افتح تدريبات للبكالوريا',
+  'افتح محور خصائص العقوبات',
+  'افتح محور الحكمة من التشريع',
 ];
 
 interface VisualMap {
@@ -53,9 +51,8 @@ const visualMaps: VisualMap[] = [
 ];
 
 function makeStudentBranches() {
-  return unitContent.mindMap.branches.map((branch, index) => {
-    if (index === 0) return { ...branch, title: '1. المفاهيم الأساسية', sub_items: branch.sub_items.slice(0, 2) };
-    if (index === 5) return { ...branch, title: '6. مهارات الإجابة' };
+  return unitContent.mindMap.branches.slice(0, 5).map((branch, index) => {
+    if (index === 0) return { ...branch, title: '1. المفاهيم الأساسية والأسباب', sub_items: branch.sub_items.slice(0, 2) };
     return branch;
   });
 }
