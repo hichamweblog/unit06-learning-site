@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { unitContent, type QuizQuestion } from '../data';
+import type { QuizQuestion } from '../data/units/normalize';
+import { useUnit } from '../context/useUnit';
 import { useProgress } from '../context/useProgress';
 import { calculateQuizScore, shuffleItems, type AnswerMap } from '../lib/quiz';
 import { PageHeading } from '../components/PageHeading';
 import { Feedback } from '../components/Feedback';
 import { Callout } from '../components/Callout';
+import { track } from '../lib/analytics';
 
 export type QuizMode = 'practice' | 'exam';
 
-function ModeSelection({ onStart }: { onStart: (mode: QuizMode, shuffled: boolean) => void }) {
+function ModeSelection({ onStart, total }: { onStart: (mode: QuizMode, shuffled: boolean) => void; total: number }) {
   const [shuffled, setShuffled] = useState(false);
   return (
     <div className="quiz-start">
@@ -19,7 +21,7 @@ function ModeSelection({ onStart }: { onStart: (mode: QuizMode, shuffled: boolea
         <button className="mode-card mode-card--copper" type="button" onClick={() => onStart('exam', shuffled)}><span className="mode-card__icon" aria-hidden="true">◎</span><h3>اختبر نفسك</h3><p>أجب عن الأسئلة، ثم اعرض الدرجة والتفسيرات بعد إنهاء المحاولة.</p><span className="text-link">ابدأ الاختبار <span aria-hidden="true">←</span></span></button>
       </div>
       <label className="shuffle-control"><input type="checkbox" checked={shuffled} onChange={(event) => setShuffled(event.target.checked)} /><span className="custom-check" aria-hidden="true">✓</span>خلط ترتيب الأسئلة</label>
-      <div className="quiz-start__count">عدد أسئلة المراجعة: <strong><bdi>{unitContent.quiz.length}</bdi></strong></div>
+      <div className="quiz-start__count">عدد أسئلة المراجعة: <strong><bdi>{total}</bdi></strong></div>
     </div>
   );
 }
@@ -114,6 +116,7 @@ function ResultView({ mode, questions, answers, elapsedTime, onRetry }: { mode: 
 }
 
 export function QuizPage({ embedded }: { embedded?: boolean } = {}) {
+  const unit = useUnit();
   const { recordQuizScore } = useProgress();
   const [mode, setMode] = useState<QuizMode | null>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -189,16 +192,19 @@ export function QuizPage({ embedded }: { embedded?: boolean } = {}) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- choose/confirmAnswer تعتمدان على الحالة الحالية؛ إعادة الربط في كل ضغطة مفتاح سلوك مقصود
   }, [mode, finished, current, currentAnswer, finishDialog]);
 
   function start(nextMode: QuizMode, shuffled: boolean) {
-    const nextQuestions = shuffled ? shuffleItems(unitContent.quiz) : [...unitContent.quiz];
+    const nextQuestions = shuffled ? shuffleItems(unit.quiz) : [...unit.quiz];
+    track('quiz_started', { unit: unit.slug, mode: mode ?? 'practice' });
     setMode(nextMode); setQuestions(nextQuestions); setAnswers({}); setIndex(0); setFinished(false); setFinishDialog(false); setMessage(''); setTimer(0);
   }
 
   function finish() {
     const result = calculateQuizScore(questions, answers);
     recordQuizScore(result.percent);
+    track('quiz_finished', { unit: unit.slug, mode: mode ?? 'practice', percent: result.percent });
     setFinished(true); setFinishDialog(false);
     const motionOk = !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     window.scrollTo({ top: 0, behavior: motionOk ? 'smooth' : 'instant' });
@@ -220,7 +226,7 @@ export function QuizPage({ embedded }: { embedded?: boolean } = {}) {
           description="اختر وضع التدريب للحصول على تغذية راجعة بعد كل إجابة، أو اختبر نفسك ثم راجع النتيجة في النهاية."
         />
       )}
-      {!mode && <ModeSelection onStart={start} />}
+      {!mode && <ModeSelection onStart={start} total={unit.quiz.length} />}
       {mode && !finished && current && (
         <section className="quiz-workspace" aria-labelledby="question-text">
           <div className="quiz-topline">
@@ -229,7 +235,7 @@ export function QuizPage({ embedded }: { embedded?: boolean } = {}) {
             <span className={`mode-badge${mode === 'exam' ? ' mode-badge--exam' : ''}`}>{mode === 'exam' ? 'اختبر نفسك' : 'تدرب مع التفسير'}</span>
           </div>
           <div className="quiz-progress"><div className="quiz-progress__label"><span>السؤال <bdi>{index + 1}</bdi> من <bdi>{questions.length}</bdi></span><span>تم تأكيد <bdi>{stats.answered}</bdi> إجابة</span></div><div className="quiz-progress__track" role="progressbar" aria-label="تقدم الاختبار" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={stats.answered}><span style={{ width: `${(stats.answered / Math.max(questions.length, 1)) * 100}%` }} /></div></div>
-          <article className="question-card"><div className="question-card__meta"><span className="question-card__no"><bdi>{String(index + 1).padStart(2, '0')}</bdi></span><div><p className="eyebrow">{current.category ?? 'سؤال للمراجعة'}</p>{current.bloomLevel && <span className="question-card__level">{current.bloomLevel}</span>}</div></div>
+          <article className="question-card"><div className="question-card__meta"><span className="question-card__no"><bdi>{String(index + 1).padStart(2, '0')}</bdi></span><div><p className="eyebrow">{current.category ?? 'سؤال للمراجعة'}</p>{current.level && <span className="question-card__level">{current.level}</span>}</div></div>
             <fieldset className="quiz-fieldset" disabled={currentAnswer?.confirmed}><legend id="question-text">{current.question}</legend><div className="quiz-options">{current.options.map((option) => (
               <label className={`quiz-option${currentAnswer?.selectedOptionId === option.id ? ' quiz-option--selected' : ''}${currentAnswer?.confirmed && option.id === current.correctOptionId ? ' quiz-option--correct' : ''}${currentAnswer?.confirmed && currentAnswer.selectedOptionId === option.id && option.id !== current.correctOptionId ? ' quiz-option--wrong' : ''}`} key={option.id}>
                 <input type="radio" name={`question-${current.id}`} value={option.id} checked={currentAnswer?.selectedOptionId === option.id} onChange={() => choose(option.id)} />

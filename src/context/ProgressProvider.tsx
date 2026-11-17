@@ -3,7 +3,10 @@ import { clearProgress, defaultProgress, readProgress, writeProgress, type Progr
 import { ProgressContext } from './progressContext';
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [snapshot, setSnapshot] = useState<ProgressReadResult>(() => readProgress());
+  const [snapshot, setSnapshot] = useState<ProgressReadResult>(() =>
+    // أثناء توليد الصفحات الثابتة لا يوجد تخزين محلي: نبدأ بحالة نظيفة دون تحذير
+    typeof window === 'undefined' ? { progress: defaultProgress(), warning: null } : readProgress(),
+  );
   const snapshotRef = useRef(snapshot);
 
   const updateProgress = useCallback((patch: Partial<Omit<UserProgressV1, 'schemaVersion' | 'updatedAt'>>) => {

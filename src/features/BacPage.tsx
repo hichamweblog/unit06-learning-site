@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
-import { studentPracticeQuestions } from '../data';
+import { useUnit } from '../context/useUnit';
 import { PageHeading } from '../components/PageHeading';
 import { useProgress } from '../context/useProgress';
 
 type EvaluationState = 'mastered' | 'partial' | 'review';
 
-function getSavedEvaluations(): Record<string, EvaluationState> {
+function getSavedEvaluations(slug: string): Record<string, EvaluationState> {
   if (typeof window === 'undefined') return {};
   try {
-    const raw = localStorage.getItem('unit06_bac_evaluations');
+    const raw = localStorage.getItem(`${slug}_bac_evaluations`);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
 }
 
-function getSavedAttempts(): Record<string, string> {
+function getSavedAttempts(slug: string): Record<string, string> {
   if (typeof window === 'undefined') return {};
   try {
-    const raw = localStorage.getItem('unit06_bac_attempts');
+    const raw = localStorage.getItem(`${slug}_bac_attempts`);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -26,13 +26,15 @@ function getSavedAttempts(): Record<string, string> {
 }
 
 export function BacPage({ embedded }: { embedded?: boolean } = {}) {
+  const unit = useUnit();
+  const practice = unit.practice;
   const { markSectionComplete } = useProgress();
-  const [evaluations, setEvaluations] = useState<Record<string, EvaluationState>>(getSavedEvaluations);
-  const [attempts, setAttempts] = useState<Record<string, string>>(getSavedAttempts);
+  const [evaluations, setEvaluations] = useState<Record<string, EvaluationState>>(() => getSavedEvaluations(unit.slug));
+  const [attempts, setAttempts] = useState<Record<string, string>>(() => getSavedAttempts(unit.slug));
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<'all' | 'mastered' | 'review' | 'pending'>('all');
 
-  const totalQuestions = studentPracticeQuestions.length;
+  const totalQuestions = practice.length;
   const evaluatedCount = Object.keys(evaluations).length;
   const masteredCount = Object.values(evaluations).filter((s) => s === 'mastered').length;
   const partialCount = Object.values(evaluations).filter((s) => s === 'partial').length;
@@ -40,22 +42,22 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('unit06_bac_evaluations', JSON.stringify(evaluations));
+      localStorage.setItem(`${unit.slug}_bac_evaluations`, JSON.stringify(evaluations));
     } catch {
       // storage unavailable
     }
     if (evaluatedCount >= 3) {
-      markSectionComplete('bac-practice');
+      markSectionComplete(`${unit.slug}:activity:bac-practice`);
     }
-  }, [evaluations, evaluatedCount, markSectionComplete]);
+  }, [evaluations, evaluatedCount, markSectionComplete, unit.slug]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('unit06_bac_attempts', JSON.stringify(attempts));
+      localStorage.setItem(`${unit.slug}_bac_attempts`, JSON.stringify(attempts));
     } catch {
       // storage unavailable
     }
-  }, [attempts]);
+  }, [attempts, unit.slug]);
 
   function handleEvaluate(id: string, state: EvaluationState) {
     setEvaluations((prev) => ({ ...prev, [id]: state }));
@@ -73,14 +75,14 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
     if (window.confirm('هل تريد إعادة تعيين تقييماتك لتدريبات البكالوريا؟')) {
       setEvaluations({});
       try {
-        localStorage.removeItem('unit06_bac_evaluations');
+        localStorage.removeItem(`${unit.slug}_bac_evaluations`);
       } catch {
         // ignore
       }
     }
   }
 
-  const filteredQuestions = studentPracticeQuestions.filter((q) => {
+  const filteredQuestions = practice.filter((q) => {
     if (filter === 'mastered') return evaluations[q.id] === 'mastered';
     if (filter === 'review') return evaluations[q.id] === 'review' || evaluations[q.id] === 'partial';
     if (filter === 'pending') return !evaluations[q.id];
@@ -176,7 +178,7 @@ export function BacPage({ embedded }: { embedded?: boolean } = {}) {
           </div>
         ) : (
           filteredQuestions.map((question) => {
-            const originalIndex = studentPracticeQuestions.findIndex((q) => q.id === question.id);
+            const originalIndex = practice.findIndex((q) => q.id === question.id);
             const evaluation = evaluations[question.id];
             const isRevealed = Boolean(revealedIds[question.id]);
             const currentAttempt = attempts[question.id] || '';

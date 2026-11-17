@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { unitContent } from '../../src/data';
+import { defaultUnit } from '../../src/data/units/registry';
 import { calculateQuizScore, shuffleItems, type AnswerMap } from '../../src/lib/quiz';
 
 describe('منطق تصحيح الاختبار', () => {
   it('يحسب الدرجة من كامل البنك ويعد غير المجاب خطأ لا إجابة صحيحة', () => {
-    const [first, second, third] = unitContent.quiz;
+    const [first, second, third] = defaultUnit!.quiz;
     if (!first || !second || !third) throw new Error('بيانات الاختبار غير كافية');
     const wrongOption = second.options.find((option) => option.id !== second.correctOptionId);
     if (!wrongOption) throw new Error('لا يوجد خيار خاطئ للاختبار');
@@ -22,7 +22,7 @@ describe('منطق تصحيح الاختبار', () => {
   });
 
   it('يخلط ترتيب الأسئلة دون حذفها أو تغيير معرّفات الخيارات', () => {
-    const original = unitContent.quiz.slice(0, 5);
+    const original = defaultUnit!.quiz.slice(0, 5);
     const before = original.map((question) => [question.id, question.correctOptionId, ...question.options.map((option) => option.id)]);
     const shuffled = shuffleItems(original, () => 0);
     expect(shuffled.map((question) => question.id).sort()).toEqual(original.map((question) => question.id).sort());

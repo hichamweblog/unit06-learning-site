@@ -1,64 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { unitContent } from '../data';
+import { unitPath } from '../lib/site';
+import { useUnit } from '../context/useUnit';
 import { PageHeading } from '../components/PageHeading';
 
-const branchDestinations = [
-  '/learn?section=0',
-  '/learn?section=1',
-  '/learn?section=2',
-  '/learn?section=3',
-  '/learn?section=3',
-];
-const destinationLabels = [
-  'افتح محور المفاهيم الأساسية',
-  'افتح محور المنهج الوقائي',
-  'افتح محور المنهج العلاجي',
-  'افتح محور خصائص العقوبات',
-  'افتح محور الحكمة من التشريع',
-];
-
-interface VisualMap {
-  id: string;
-  title: string;
-  badge: string;
-  imageSrc: string;
-  fileName: string;
-}
-
-const visualMaps: VisualMap[] = [
-  {
-    id: 'mindmap-buzan',
-    title: 'الخريطة الذهنية الشاملة',
-    badge: 'شجرة الوحدة الكاملة',
-    imageSrc: '/images/maps/unit06-mindmap-buzan.jpg',
-    fileName: 'خريطة_الوحدة_06_الشاملة.jpg',
-  },
-  {
-    id: 'infographic',
-    title: 'الإنفوجرافيك التعليمي والرسوم التوضيحية',
-    badge: 'رموز بصرية وإيضاحات',
-    imageSrc: '/images/maps/unit06-infographic.jpg',
-    fileName: 'إنفوجرافيك_منهج_الإسلام_محاربة_الجريمة.jpg',
-  },
-  {
-    id: 'integrated-vision',
-    title: 'لوحة الرؤية المتكاملة للوقاية والعلاج',
-    badge: 'تأطير مفاهيمي أصيل',
-    imageSrc: '/images/maps/unit06-integrated-vision.jpg',
-    fileName: 'لوحة_الرؤية_المتكاملة_الوحدة_06.jpg',
-  },
-];
-
-function makeStudentBranches() {
-  return unitContent.mindMap.branches.slice(0, 5).map((branch, index) => {
-    if (index === 0) return { ...branch, title: '1. المفاهيم الأساسية والأسباب', sub_items: branch.sub_items.slice(0, 2) };
-    return branch;
-  });
-}
-
 export function MapPage() {
-  const branches = makeStudentBranches();
+  const unit = useUnit();
+  const branches = unit.mindMap.branches;
+  const visualMaps = unit.gallery.map((item) => ({
+    id: item.id,
+    title: item.title,
+    badge: item.badge ?? '',
+    imageSrc: item.src,
+    fileName: item.fileName ?? item.id,
+  }));
+  const destinations = branches.map((branch) => {
+    const index = branch.sectionId ? unit.sectionIds.indexOf(branch.sectionId) : -1;
+    return `${unitPath(unit.slug, 'learn')}?section=${index >= 0 ? index : 0}`;
+  });
+  const destinationLabels = branches.map((branch) => `افتح محور ${branch.title}`);
   const [viewMode, setViewMode] = useState<'visual' | 'interactive'>('visual');
   const [currentMapIndex, setCurrentMapIndex] = useState(0);
   const [selectedBranch, setSelectedBranch] = useState(0);
@@ -68,16 +28,18 @@ export function MapPage() {
 
   const currentMap = visualMaps[currentMapIndex] ?? visualMaps[0]!;
   const activeBranch = branches[selectedBranch];
+  const hasGallery = visualMaps.length > 0;
+  const effectiveView = hasGallery ? viewMode : 'interactive';
 
-  function handlePrev() {
+  const handlePrev = useCallback(() => {
     setCurrentMapIndex((prev) => (prev > 0 ? prev - 1 : visualMaps.length - 1));
     setZoomLevel(1);
-  }
+  }, [visualMaps.length]);
 
-  function handleNext() {
+  const handleNext = useCallback(() => {
     setCurrentMapIndex((prev) => (prev < visualMaps.length - 1 ? prev + 1 : 0));
     setZoomLevel(1);
-  }
+  }, [visualMaps.length]);
 
   function handleTouchStart(e: React.TouchEvent) {
     const touch = e.touches[0];
@@ -120,7 +82,7 @@ export function MapPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [viewMode, isFullscreen]);
+  }, [viewMode, isFullscreen, handleNext, handlePrev]);
 
   return (
     <div className="page-wrap inner-page map-page">
@@ -130,6 +92,7 @@ export function MapPage() {
         description="استحضر محاور الوحدة وروابطها عبر الخرائط المصوّرة مع إمكانية التمرير والتكبير والتحميل، أو تصفح الخريطة التفاعلية."
       />
 
+      {hasGallery && (
       <nav className="map-view-switcher" aria-label="أنماط عرض الخرائط">
         <button
           type="button"
@@ -148,8 +111,9 @@ export function MapPage() {
           <span>الخريطة التفاعلية</span>
         </button>
       </nav>
+      )}
 
-      {viewMode === 'visual' ? (
+      {effectiveView === 'visual' && currentMap ? (
         <section className="visual-maps-section" aria-label="الخرائط المصورة">
           {/* Main Visual Map Viewer / Slider */}
           <div className="map-viewer-container">
@@ -279,7 +243,7 @@ export function MapPage() {
           <div className="map-canvas">
             <div className="map-root">
               <p className="eyebrow">الموضوع الرئيس</p>
-              <h2>{unitContent.metadata.unit_title}</h2>
+              <h2>{unit.title}</h2>
               <span className="map-root__connector" aria-hidden="true" />
             </div>
             <div className="map-branches" role="list" aria-label="فروع الخريطة">
@@ -296,7 +260,7 @@ export function MapPage() {
                     <span className="map-branch__title">{branch.title}</span>
                     <span className="map-branch__chevron" aria-hidden="true">{selectedBranch === index ? '−' : '+'}</span>
                   </button>
-                  <p id={`branch-summary-${index}`} className="map-branch__summary">{branch.sub_items[0]}</p>
+                  <p id={`branch-summary-${index}`} className="map-branch__summary">{branch.items[0]}</p>
                 </article>
               ))}
             </div>
@@ -312,11 +276,11 @@ export function MapPage() {
                 </div>
               </div>
               <ul className="map-detail__items">
-                {activeBranch.sub_items.map((item) => (
+                {activeBranch.items.map((item) => (
                   <li key={item}><span aria-hidden="true">◇</span>{item}</li>
                 ))}
               </ul>
-              <Link className="button button--navy" to={branchDestinations[selectedBranch] ?? '/learn'}>
+              <Link className="button button--navy" to={destinations[selectedBranch] ?? unitPath(unit.slug, 'learn')}>
                 {destinationLabels[selectedBranch] ?? 'انتقل إلى الدرس'} <span aria-hidden="true">←</span>
               </Link>
             </section>

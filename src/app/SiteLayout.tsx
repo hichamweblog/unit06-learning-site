@@ -1,20 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useProgress } from '../context/useProgress';
-import { unitContent } from '../data';
+import { getUnit } from '../data/units/registry';
 import { StorageNotice } from '../components/StorageNotice';
-
-const navigation = [
-  { to: '/learn', label: 'الدرس' },
-  { to: '/map', label: 'الخرائط الذهنية' },
-  { to: '/activities', label: 'الأنشطة والتقويم', matches: ['/activities', '/quiz', '/flashcards', '/bac'] },
-];
+import { site, unitPath } from '../lib/site';
 
 function getInitialTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light';
   try {
-    const saved = localStorage.getItem('unit06_theme');
-    return saved === 'dark' ? 'dark' : 'light';
+    return localStorage.getItem('unit06_theme') === 'dark' ? 'dark' : 'light';
   } catch {
     return 'light';
   }
@@ -26,6 +20,21 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const menuOpen = openOnPath === location.pathname;
   const { updateProgress } = useProgress();
+
+  const unitSlug = location.pathname.match(/^\/units\/([a-z0-9-]+)/)?.[1];
+  const currentUnit = getUnit(unitSlug);
+
+  const navigation = [
+    { to: '/', label: 'الوحدات', end: true },
+    ...(currentUnit
+      ? [
+          { to: unitPath(currentUnit.slug, 'learn'), label: 'الدرس' },
+          { to: unitPath(currentUnit.slug, 'map'), label: 'الخرائط' },
+          { to: unitPath(currentUnit.slug, 'activities'), label: 'الأنشطة' },
+        ]
+      : []),
+    { to: '/about', label: 'المنهجية' },
+  ];
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -51,19 +60,25 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       <a className="skip-link" href="#main-content">انتقل إلى المحتوى</a>
       <header className="site-header">
         <div className="site-header__inner">
-          <Link className="brand" to="/" aria-label={`الصفحة الرئيسية: ${unitContent.metadata.unit_title}`}>
-            <span className="brand__text"><strong>{unitContent.metadata.unit_title}</strong><small>الوحدة السادسة · العلوم الإسلامية</small></span>
+          <Link className="brand" to="/" aria-label={`${site.name}: الصفحة الرئيسية`}>
+            <span className="brand__mark" aria-hidden="true">م</span>
+            <span className="brand__text">
+              <strong>{site.name}</strong>
+              <small>{currentUnit ? `الوحدة ${currentUnit.number} · ${currentUnit.shortTitle ?? currentUnit.title}` : site.tagline}</small>
+            </span>
           </Link>
 
           <nav id="primary-navigation" className={`primary-navigation ${menuOpen ? 'primary-navigation--open' : ''}`} aria-label="التنقل الرئيسي">
-            {navigation.map((item) => {
-              const isMatched = location.pathname.startsWith(item.to) || (item.matches && item.matches.some((m) => location.pathname.startsWith(m)));
-              return (
-                <NavLink key={item.to} to={item.to} className={`nav-link${isMatched ? ' nav-link--active' : ''}`}>
-                  {item.label}
-                </NavLink>
-              );
-            })}
+            {navigation.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={'end' in item ? item.end : false}
+                className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
+              >
+                {item.label}
+              </NavLink>
+            ))}
           </nav>
 
           <div className="site-header__controls">
@@ -91,7 +106,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               type="button"
               aria-expanded={menuOpen}
               aria-controls="primary-navigation"
-              onClick={() => setOpenOnPath((openPath) => openPath === location.pathname ? null : location.pathname)}
+              onClick={() => setOpenOnPath((openPath) => (openPath === location.pathname ? null : location.pathname))}
             >
               <span aria-hidden="true">{menuOpen ? '×' : '☰'}</span>
               <span className="sr-only">{menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}</span>
@@ -105,10 +120,17 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
       <footer className="site-footer">
         <div className="site-footer__inner">
-          <Link to="/" className="footer-brand">{unitContent.metadata.unit_title}<span>الوحدة السادسة · العلوم الإسلامية</span></Link>
+          <Link to="/" className="footer-brand">
+            {site.name}
+            <span>{site.tagline}</span>
+          </Link>
           <p>تقدّمك محفوظ على هذا الجهاز فقط، ولا تُرسل إجاباتك إلى أي جهة.</p>
         </div>
-        <div className="site-footer__bottom">تعلّم، تدرّب، وراجع بطاقات الوحدة.</div>
+        <div className="site-footer__bottom">
+          <Link to="/about">المنهجية والمصادر</Link>
+          <span>·</span>
+          <span>تعلّم، تدرّب، وراجع بطاقات الوحدة.</span>
+        </div>
       </footer>
     </div>
   );

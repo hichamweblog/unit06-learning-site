@@ -1,133 +1,146 @@
 import { Link } from 'react-router-dom';
-import { unitContent, studentPracticeQuestions } from '../data';
 import { useProgress } from '../context/useProgress';
+import { sectionKey, useUnit } from '../context/useUnit';
 import { ProgressBar } from '../components/ProgressBar';
 import { ResetProgressButton } from '../components/ResetProgressButton';
+import { unitPath } from '../lib/site';
 
-interface PathwayItem {
-  number: string;
-  stepLabel: string;
-  title: string;
-  focus: string;
-  copy: string;
-  to: string;
-  action: string;
-  tone: 'navy' | 'copper' | 'sage';
+function splitTitle(title: string): [string, string] | null {
+  const words = title.split(' ');
+  if (words.length < 4) return null;
+  const splitAt = Math.max(2, words.length - 2);
+  return [words.slice(0, splitAt).join(' '), words.slice(splitAt).join(' ')];
 }
 
-const pathways: PathwayItem[] = [
-  {
-    number: '01',
-    stepLabel: 'المحطة الأولى · الفهم والتأسيس',
-    title: 'الدرس والمفاهيم النظرية',
-    focus: 'الشرح المنهجي والتأصيل',
-    copy: 'استوعب محاور الوحدة الأربعة مع الشواهد الشرعية المشكولة، والتعريفات الاصطلاحية، وجداول الفروق الدقيقة.',
-    to: '/learn',
-    action: 'ابدأ التعلم',
-    tone: 'navy',
-  },
-  {
-    number: '02',
-    stepLabel: 'المحطة الثانية · الربط البصري',
-    title: 'الخرائط الذهنية',
-    focus: 'الربط والاستحضار الشامل',
-    copy: 'استحضر العلاقات والروابط الذهنية بصرياً عبر خريطة شجرية تفاعلية ومعرض يضم 3 خرائط مصورة ملونة عالية الدقة.',
-    to: '/map',
-    action: 'استكشف الخرائط الذهنية',
-    tone: 'copper',
-  },
-  {
-    number: '03',
-    stepLabel: 'المحطة الثالثة · التثبيت والامتحان',
-    title: 'الأنشطة والتقويم الشامل',
-    focus: 'التطبيق العملي والجاهزية',
-    copy: 'مركز تطبيقي متدرج يجمع بطاقات الحفظ الذكية، أنشطة الفرز، بنك الأسئلة (20 سؤالاً)، وتدريبات البكالوريا النموذجية.',
-    to: '/activities',
-    action: 'ادخل مركز الأنشطة',
-    tone: 'sage',
-  },
-];
-
-const routeLabels: Record<string, string> = {
-  '/learn': 'الدرس والمفاهيم',
-  '/map': 'الخرائط الذهنية',
-  '/activities': 'الأنشطة والتقويم',
-  '/quiz': 'اختبر نفسك',
-  '/flashcards': 'بطاقات المراجعة',
-  '/bac': 'تدريبات البكالوريا',
-};
-
-function getSavedBacEvaluationCount(): number {
+function savedBacCount(slug: string): number {
   if (typeof window === 'undefined') return 0;
   try {
-    const raw = localStorage.getItem('unit06_bac_evaluations');
-    if (!raw) return 0;
-    const parsed = JSON.parse(raw);
-    return Object.keys(parsed).length;
+    const raw = localStorage.getItem(`${slug}_bac_evaluations`);
+    return raw ? Object.keys(JSON.parse(raw) as Record<string, unknown>).length : 0;
   } catch {
     return 0;
   }
 }
 
-export function HomePage() {
-  const { progress } = useProgress();
-  const completed = progress.completedSections.filter((id) => ['concepts', 'prevention', 'penalties', 'wisdom'].includes(id)).length;
-  const completedActivities = progress.completedSections.filter((id) => !['concepts', 'prevention', 'penalties', 'wisdom'].includes(id)).length;
-  const masteredCards = unitContent.flashcards.filter((card) => progress.masteredFlashcardIds.includes(card.cardId)).length;
-  const reviewCards = unitContent.flashcards.filter((card) => progress.reviewFlashcardIds.includes(card.cardId)).length;
-  const bacEvaluated = getSavedBacEvaluationCount();
+const routeLabels: Record<string, string> = {
+  learn: 'الدرس والمفاهيم',
+  map: 'الخرائط الذهنية',
+  activities: 'الأنشطة والتقويم',
+  quiz: 'اختبر نفسك',
+  flashcards: 'بطاقات المراجعة',
+  bac: 'تدريبات البكالوريا',
+};
 
-  const totalPossible = 4 + unitContent.flashcards.length + studentPracticeQuestions.length;
-  const currentTotalDone = completed + masteredCards + bacEvaluated;
-  const overallPercentage = Math.min(100, Math.round((currentTotalDone / totalPossible) * 100));
+export function UnitHomePage() {
+  const unit = useUnit();
+  const { progress } = useProgress();
+
+  const completedSet = new Set(progress.completedSections);
+  const completed = unit.sections.filter((section) => completedSet.has(sectionKey(unit, section.id))).length;
+  const masteredCards = unit.flashcards.filter((card) => progress.masteredFlashcardIds.includes(card.cardId)).length;
+  const reviewCards = unit.flashcards.filter((card) => progress.reviewFlashcardIds.includes(card.cardId)).length;
+  const bacEvaluated = savedBacCount(unit.slug);
+
+  const totalPossible = unit.sections.length + unit.flashcards.length + unit.practice.length;
+  const currentTotalDone = completed + masteredCards + Math.min(bacEvaluated, unit.practice.length);
+  const overallPercentage = Math.min(100, Math.round((currentTotalDone / Math.max(totalPossible, 1)) * 100));
 
   const hasProgress = Boolean(
-    completed || completedActivities || progress.lastRoute || progress.latestQuizScore !== undefined ||
-    progress.masteredFlashcardIds.length || progress.reviewFlashcardIds.length || bacEvaluated > 0,
+    completed ||
+      progress.lastRoute ||
+      progress.latestQuizScore !== undefined ||
+      progress.masteredFlashcardIds.length ||
+      progress.reviewFlashcardIds.length ||
+      bacEvaluated > 0,
   );
 
-  const resumeRoute = progress.lastRoute && routeLabels[progress.lastRoute] ? progress.lastRoute : '/learn';
-  const resumeLabel = progress.lastRoute ? routeLabels[resumeRoute] : 'الدرس والمفاهيم';
+  const unitBase = unitPath(unit.slug);
+  const page = progress.lastRoute?.startsWith(unitBase) ? progress.lastRoute.split('/').pop() ?? '' : '';
+  const resumeRoute = progress.lastRoute && routeLabels[page] ? progress.lastRoute : unitPath(unit.slug, 'learn');
+  const resumeLabel = routeLabels[page] ?? 'الدرس والمفاهيم';
+  const titleLines = splitTitle(unit.title);
+
+  const pathways = [
+    {
+      number: '01',
+      stepLabel: 'المحطة الأولى · الفهم والتأسيس',
+      title: 'الدرس والمفاهيم النظرية',
+      focus: 'الشرح المنهجي والتأصيل',
+      copy: `${unit.sections.length} محاور مع الشواهد الشرعية والتعريفات الاصطلاحية والجداول، وسؤال فهم بعد كل محور.`,
+      to: unitPath(unit.slug, 'learn'),
+      action: 'ابدأ التعلم',
+      tone: 'navy',
+    },
+    {
+      number: '02',
+      stepLabel: 'المحطة الثانية · الربط البصري',
+      title: 'الخرائط الذهنية',
+      focus: 'الربط والاستحضار الشامل',
+      copy: `خريطة تفاعلية نصية${unit.gallery.length ? `، ومعرض يضم ${unit.gallery.length} خرائط مصوّرة قابلة للتحميل` : ''} لاستحضار بنية الوحدة في دقائق.`,
+      to: unitPath(unit.slug, 'map'),
+      action: 'استكشف الخرائط',
+      tone: 'copper',
+    },
+    {
+      number: '03',
+      stepLabel: 'المحطة الثالثة · التثبيت والامتحان',
+      title: 'الأنشطة والتقويم الشامل',
+      focus: 'التطبيق العملي والجاهزية',
+      copy: `مركز تطبيقي يجمع ${unit.flashcards.length} بطاقة استرجاع، وأنشطة فرز ومقارنة، و${unit.quiz.length} سؤالًا، و${unit.practice.length} تطبيق بكالوريا.`,
+      to: unitPath(unit.slug, 'activities'),
+      action: 'ادخل مركز الأنشطة',
+      tone: 'sage',
+    },
+  ] as const;
 
   return (
     <div className="home-page page-wrap">
-      {/* 1. HERO SECTION */}
       <section className="hero-panel hero-panel--clean" aria-labelledby="home-title">
         <div className="hero-panel__inner">
           <div className="hero-badge">
-            <span>برنامج بكالوريا 2026 · مادة العلوم الإسلامية</span>
+            <span>{unit.program.label}</span>
           </div>
 
           <h1 id="home-title">
-            منهج الإسلام في محاربة
-            <br className="hero-title-break" />
-            الانحراف والجريمة
+            {titleLines ? (
+              <>
+                {titleLines[0]}
+                <br className="hero-title-break" />
+                {titleLines[1]}
+              </>
+            ) : (
+              unit.title
+            )}
           </h1>
 
           <div className="hero-panel__content">
             <p className="hero-panel__lead-title">وحدة تعليمية وفق التدرجات الرسمية:</p>
             <ul className="hero-panel__objectives">
-              <li>استوعب المفاهيم بأدلتها الشرعية</li>
-              <li>استعرض الخرائط الذهنية الشاملة</li>
-              <li>تدرّب على أسئلة البكالوريا النموذجية مع إمكانية التقييم الذاتي الفوري.</li>
+              {unit.objectives.map((objective) => (
+                <li key={objective}>{objective}</li>
+              ))}
             </ul>
           </div>
 
           <div className="hero-panel__actions">
-            <Link className="button button--copper hero-btn-cta" to="/learn">
+            <Link className="button button--copper hero-btn-cta" to={unitPath(unit.slug, 'learn')}>
               ابدأ التعلم <span aria-hidden="true">←</span>
             </Link>
-            <Link className="button button--hero-outline" to="/map">
+            <Link className="button button--hero-outline" to={unitPath(unit.slug, 'map')}>
               الخرائط الذهنية
             </Link>
-            <Link className="button button--hero-outline" to="/activities">
+            <Link className="button button--hero-outline" to={unitPath(unit.slug, 'activities')}>
               الأنشطة والتقويم
             </Link>
           </div>
+
+          <p className="hero-provenance">
+            {unit.provenance.reviewedAt ? <>آخر مراجعة: {unit.provenance.reviewedAt} · </> : null}
+            <Link to="/about">المصادر ومنهجية العمل</Link>
+          </p>
         </div>
       </section>
 
-      {/* 2. THE THREE CORE LEARNING HUBS */}
       <section className="pathway-section" aria-labelledby="pathway-title">
         <header className="section-intro">
           <div>
@@ -161,7 +174,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 3. CONTINUOUS SELF-MONITORING & PROGRESS DASHBOARD */}
       <section className="progress-panel progress-panel--modern" aria-labelledby="progress-title">
         <header className="progress-panel__top">
           <div>
@@ -182,30 +194,32 @@ export function HomePage() {
 
               <div className="p-metric-card">
                 <span className="p-metric-card__label">محاور الدرس المكتملة</span>
-                <span className="p-metric-card__value"><bdi>{completed} / 4</bdi></span>
-                <span className="p-metric-card__hint">المفاهيم · الوقاية · العقوبات · الحكمة</span>
+                <span className="p-metric-card__value"><bdi>{completed} / {unit.sections.length}</bdi></span>
+                <span className="p-metric-card__hint">{unit.sections.map((section) => section.label).join(' · ')}</span>
               </div>
 
               <div className="p-metric-card">
                 <span className="p-metric-card__label">بطاقات المراجعة المتقنة</span>
-                <span className="p-metric-card__value"><bdi>{masteredCards} / {unitContent.flashcards.length}</bdi></span>
+                <span className="p-metric-card__value"><bdi>{masteredCards} / {unit.flashcards.length}</bdi></span>
                 <span className="p-metric-card__hint">بطاقات للمراجعة: {reviewCards}</span>
               </div>
 
               <div className="p-metric-card">
                 <span className="p-metric-card__label">تطبيقات البكالوريا المقيّمة</span>
-                <span className="p-metric-card__value"><bdi>{bacEvaluated} / {studentPracticeQuestions.length}</bdi></span>
+                <span className="p-metric-card__value"><bdi>{bacEvaluated} / {unit.practice.length}</bdi></span>
                 <span className="p-metric-card__hint">مقارنة ذاتية مع نموذج الإجابة</span>
               </div>
             </div>
 
             <div className="progress-dashboard__bottom">
               <div className="progress-dashboard__bar-area">
-                <ProgressBar value={completed} max={4} label="تقدم محاور الدرس الأساسية" />
+                <ProgressBar value={completed} max={unit.sections.length} label="تقدم محاور الدرس الأساسية" />
                 {progress.latestQuizScore !== undefined && (
                   <p className="saved-result">
                     آخر نتيجة للاختبار الشامل: <strong><bdi>{progress.latestQuizScore}%</bdi></strong>
-                    {progress.bestQuizScore !== undefined && <> · أعلى نتيجة: <strong><bdi>{progress.bestQuizScore}%</bdi></strong></>}
+                    {progress.bestQuizScore !== undefined && (
+                      <> · أعلى نتيجة: <strong><bdi>{progress.bestQuizScore}%</bdi></strong></>
+                    )}
                   </p>
                 )}
                 <p className="privacy-inline">يُحفظ تقدمك تلقائياً وبأمان على هذا المتصفح فقط دون الحاجة لأي تسجيل.</p>
@@ -230,7 +244,7 @@ export function HomePage() {
                 كل محور تكمله، بطاقة تتقنها، أو تطبيق بكالوريا تقيمه، سيُسجل هنا تلقائياً لتقيس جاهزيتك التامة للامتحان.
               </p>
             </div>
-            <Link className="button button--copper" to="/learn">
+            <Link className="button button--copper" to={unitPath(unit.slug, 'learn')}>
               ابدأ بالمحور الأول الآن <span aria-hidden="true">←</span>
             </Link>
           </div>

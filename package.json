@@ -1,12 +1,12 @@
 {
-  "name": "unit06-learning-site",
-  "version": "1.0.0",
+  "name": "manhaj-islam-platform",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "موقع تعليمي تفاعلي مستقل لوحدة منهج الإسلام في محاربة الانحراف والجريمة",
+  "description": "منصة مراجعة العلوم الإسلامية للبكالوريا: قالب وحدات متعدد مع درس وخرائط وأنشطة وتقويم",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run prerender",
     "preview": "vite preview --host 0.0.0.0",
     "validate:content": "tsx scripts/validate-content.ts",
     "lint": "eslint . --max-warnings=0",
@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:pwa": "npm run build && node scripts/test-offline.mjs"
+    "test:pwa": "npm run build && node scripts/test-offline.mjs",
+    "prerender": "tsx scripts/prerender.ts",
+    "sitemap": "tsx scripts/prerender.ts --sitemap-only"
   },
   "dependencies": {
     "react": "^18.3.1",

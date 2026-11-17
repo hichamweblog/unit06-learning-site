@@ -1,17 +1,34 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { normalizeContent } from '../src/data/normalizeContent.ts';
-import { studentPracticeQuestions } from '../src/data/studentPractice.ts';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { units } from '../src/data/units/registry';
 
-const file = resolve('src/data/unit06_crime_prevention_master.json');
-try {
-  const raw: unknown = JSON.parse(readFileSync(file, 'utf8'));
-  const content = normalizeContent(raw);
-  console.log('✓ بنية ملف الوحدة صالحة.');
-  console.log(`  أسئلة الاختبار: ${content.quiz.length} — البطاقات: ${content.flashcards.length} — فروع الخريطة: ${content.mindMap.branches.length}`);
-  console.log(`  أسئلة المراجعة: ${studentPracticeQuestions.length} — صفوف جدول المقارنة: ${content.bac.predicted_practice_tables.comparison_table_penalties.rows.length}`);
-  console.log('  تم التحقق من المعرفات ومطابقة الإجابات الصحيحة، مع توزيع مواضع الإجابات بين الخيارات.');
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
+const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
+const issues: string[] = [];
+
+for (const unit of units) {
+  if (unit.status !== 'published') continue;
+  for (const image of unit.gallery) {
+    const path = `${publicDir}${image.src.replace(/^\//, '')}`;
+    if (!existsSync(path)) issues.push(`${unit.slug}: صورة الخريطة غير موجودة (${image.src})`);
+  }
+  const checks = unit.sections.flatMap((section) =>
+    section.blocks.filter((block) => block.type === 'check'),
+  );
+  if (checks.length !== unit.sections.length) {
+    issues.push(`${unit.slug}: عدد أسئلة الفهم (${checks.length}) لا يطابق عدد المحاور (${unit.sections.length})`);
+  }
 }
+
+const summary = units
+  .map(
+    (unit) =>
+      `• ${unit.slug}: ${unit.sections.length} محاور · ${unit.quiz.length} سؤالًا · ${unit.flashcards.length} بطاقة · ${unit.practice.length} تطبيق بكالوريا`,
+  )
+  .join('\n');
+
+if (issues.length > 0) {
+  console.error(`فشل التحقق من المحتوى:\n${issues.map((issue) => `- ${issue}`).join('\n')}`);
+  process.exit(1);
+}
+
+console.log(`تم التحقق من ${units.length} وحدة بنجاح:\n${summary}`);

@@ -7,115 +7,22 @@ import { FlashcardsPage } from './FlashcardsPage';
 import { QuizPage } from './QuizPage';
 import { BacPage } from './BacPage';
 import { useProgress } from '../context/useProgress';
+import { sectionKey, useUnit } from '../context/useUnit';
+import type { RawActivity } from '../data/units/types';
 
 type ActivityTab = 'classify' | 'compare';
 
-interface ClassificationItem {
-  prompt: string;
-  type: 'method' | 'penalty';
-  answer: string;
-  choices: string[];
-  explanation: string;
-}
+type ClassifyItem = Extract<RawActivity, { kind: 'classify' }>;
+type DifferenceItem = Extract<RawActivity, { kind: 'difference' }>;
 
-const classificationItems: ClassificationItem[] = [
-  // Phase 1: Method distinction (وقائي أم علاجي)
-  {
-    prompt: 'تقوية الإيمان والوازع الديني في قلب المسلم',
-    type: 'method',
-    answer: 'وقائي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'تقوية الإيمان وسيلة وقائية تعمل قبل وقوع الجريمة لحماية الفرد والمجتمع.',
-  },
-  {
-    prompt: 'تطبيق حد السرقة بقطع اليد بعد ثبوت الجريمة',
-    type: 'method',
-    answer: 'علاجي/عقابي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'تطبيق الحدود وسيلة علاجية عقابية تُنفّذ بعد وقوع الجريمة ردعاً وزجراً.',
-  },
-  {
-    prompt: 'الحث على الصلاة والعبادات ومكارم الأخلاق',
-    type: 'method',
-    answer: 'وقائي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'الصلاة والعبادات تنهى عن الفحشاء والمنكر وتزكي النفس وقائياً.',
-  },
-  {
-    prompt: 'الحكم بالقصاص في القتل العمد أو الدية عند عفو الأولياء',
-    type: 'method',
-    answer: 'علاجي/عقابي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'القصاص والدية من وسائل المنهج العلاجي بعد وقوع الاعتداء.',
-  },
-  {
-    prompt: 'استشعار مراقبة الله عز وجل والخشية من عقابه الأخروي',
-    type: 'method',
-    answer: 'وقائي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'الوازع الإيماني ومراقبة الله حصن وقائي داخلي يمنع ارتكاب المعصية.',
-  },
-  {
-    prompt: 'عقوبة الغرامة أو السجن التي يقررها القاضي في الرشوة',
-    type: 'method',
-    answer: 'علاجي/عقابي',
-    choices: ['وقائي', 'علاجي/عقابي'],
-    explanation: 'التعزير بالحبس أو الغرامة وسيلة علاجية بعد وقوع الجريمة.',
-  },
-
-  // Phase 2: Penalty classification (حدود، قصاص، دية، تعزير)
-  {
-    prompt: 'سرقة مال محرز خفية استوفى شروطه ونصابه',
-    type: 'penalty',
-    answer: 'الحدود',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'السرقة المستوفية للشروط عقوبتها مقدّرة شرعاً (حد السرقة: قطع اليد).',
-  },
-  {
-    prompt: 'الاعتداء بالقتل العمد مع ترصد الجاني للضحية',
-    type: 'penalty',
-    answer: 'القصاص',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'الجناية العمدية على النفس عقوبتها الأصلية القصاص بالمماثلة.',
-  },
-  {
-    prompt: 'تسبب سائق في وفاة شخص نتيجة حادث سير عن غير قصد (قتل خطأ)',
-    type: 'penalty',
-    answer: 'الدية',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'القتل الخطأ تجب فيه الدية المسلّمة لأهل القتيل مع الكفارة، ولا قصاص في الخطأ.',
-  },
-  {
-    prompt: 'ترويع المارة وقطع الطريق وسلب الأموال بالقوة (الحرابة)',
-    type: 'penalty',
-    answer: 'الحدود',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'الحرابة من جرائم الحدود المقدرة شرعاً في سورة المائدة.',
-  },
-  {
-    prompt: 'التزوير في المحررات الرسمية وشهادة الزور ورشوة الموظف',
-    type: 'penalty',
-    answer: 'التعزير',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'الرشوة والتزوير لم يُقدّر الشرع عقوبة محددة لها، فيقدّرها القاضي تعزيراً بحسب المصلحة.',
-  },
-  {
-    prompt: 'رمي المسلم المحصن بالزنا دون إحضار أربعة شهود (القذف)',
-    type: 'penalty',
-    answer: 'الحدود',
-    choices: ['الحدود', 'القصاص', 'الدية', 'التعزير'],
-    explanation: 'القذف عقوبته مقدّرة شرعاً بـ 80 جلدة حفظاً للعرض وهو من الحدود.',
-  },
-];
-
-function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
+function FastClassifyActivity({ items, onComplete }: { items: ClassifyItem[]; onComplete?: () => void }) {
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean | null>(null);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
 
-  const current = classificationItems[index];
+  const current = items[index];
 
   function check() {
     if (!current || !choice || checked !== null) return;
@@ -125,7 +32,7 @@ function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
   }
 
   function next() {
-    if (index === classificationItems.length - 1) {
+    if (index === items.length - 1) {
       setFinished(true);
       onComplete?.();
     } else {
@@ -149,7 +56,7 @@ function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
         <span className="result-seal" aria-hidden="true">✓</span>
         <p className="eyebrow">اكتمل نشاط الفرز والتمييز</p>
         <h3>أحسنت! أتممت أسئلة الفرز بنجاح</h3>
-        <p>النتيجة النهائية: <strong><bdi>{score}</bdi> من <bdi>{classificationItems.length}</bdi></strong> إجابة صحيحة</p>
+        <p>النتيجة النهائية: <strong><bdi>{score}</bdi> من <bdi>{items.length}</bdi></strong> إجابة صحيحة</p>
         <button className="button button--navy" type="button" onClick={retry}>
           إعادة النشاط
         </button>
@@ -163,19 +70,17 @@ function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
     <div className="activity-step">
       <div className="activity-step__meta">
         <span>
-          المسألة <bdi>{index + 1}</bdi> من <bdi>{classificationItems.length}</bdi>
-          {current.type === 'method' ? ' · (فرز المنهج)' : ' · (تصنيف العقوبة)'}
+          المسألة <bdi>{index + 1}</bdi> من <bdi>{items.length}</bdi>
+          {' · '}{current.group}
         </span>
         <div className="step-dots" aria-hidden="true">
-          {classificationItems.map((_, i) => (
+          {items.map((_, i) => (
             <i key={i} className={i <= index ? 'step-dots__active' : ''} />
           ))}
         </div>
       </div>
 
-      <p className="eyebrow">
-        {current.type === 'method' ? 'هل المثال يتبع المنهج الوقائي أم العلاجي؟' : 'ما نوع العقوبة الشرعية المقررة لهذا المثال؟'}
-      </p>
+      <p className="eyebrow">{current.group}</p>
       <h3>{current.prompt}</h3>
 
       <div className="choice-grid" role="group" aria-label="خيارات التصنيف">
@@ -212,7 +117,7 @@ function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
           </button>
         ) : (
           <button className="button button--copper" type="button" onClick={next}>
-            {index === classificationItems.length - 1 ? 'عرض النتيجة النهائية' : 'المسألة التالية'} <span aria-hidden="true">←</span>
+            {index === items.length - 1 ? 'عرض النتيجة النهائية' : 'المسألة التالية'} <span aria-hidden="true">←</span>
           </button>
         )}
       </div>
@@ -220,58 +125,16 @@ function FastClassifyActivity({ onComplete }: { onComplete?: () => void }) {
   );
 }
 
-const comparisonHeaders = ['وجه المقارنة', 'الحدود', 'القصاص والدية', 'التعزير'];
-
-const comparisonRows = [
-  ['المفهوم الأساسي', 'عقوبة مقدّرة شرعاً تجب حقاً لله تعالى', 'القصاص: معاقبة الجاني بالمثل · الدية: بدل مالي عند العفو', 'عقوبة غير مقدّرة شرعاً يقدّرها القاضي بحسب المصلحة'],
-  ['التقدير والضبط', 'مقدّرة بدقة ولا تجوز الزيادة أو النقصان', 'مقدّرة (المماثلة في القصاص، ومقادير الدية مقدرة شرعاً)', 'غير مقدّرة وتختلف باختلاف الجريمة والجاني والمصلحة'],
-  ['إمكانية العفو والشفاعة', 'لا عفو ولا شفاعة بعد وصول الأمر إلى القاضي', 'يقبل العفو من أولياء الدم (مجاناً أو مع الدية)', 'يقبل العفو والشفاعة إذا اقتضت المصلحة الشرعية ذلك'],
-  ['الحق الغالب', 'حق الله تعالى (الحق العام وحفظ النظام)', 'حق العبد والمجني عليه وأوليائه غالب', 'حق الله تعالى والمجتمع هو الغالب'],
-  ['المقصد الشرعي الأساسي', 'حفظ الكليات الخمس الكبرى ردعاً للمعتدي', 'حفظ النفس وصيانتها وحقن دماء المجتمع', 'تأديب الجاني وإصلاحه وحفظ النظام العام بما لم يُنص عليه'],
-];
-
-const comparisonQuestions = [
-  {
-    prompt: 'أي عقوبة لا تسقط فيها الشفاعة أو العفو إطلاقاً بعد أن تبلغ القاضي؟',
-    answer: 'الحدود',
-    explanation: 'الحدود حق خالص لله تعالى، فلا عفو فيها ولا شفاعة بعد بلوغها الحاكم/القاضي.',
-  },
-  {
-    prompt: 'في أي نوع من العقوبات يجوز لأولياء المجني عليه العفو مجاناً أو مقابل بدل مالي؟',
-    answer: 'القصاص والدية',
-    explanation: 'القصاص حق للمجني عليه وأوليائه، فيحق لهم العفو أو المطالبة بالدية.',
-  },
-  {
-    prompt: 'أي نوع من العقوبات متروك تقديرها نوعاً ومقداراً لاجتهاد القاضي وفق المصلحة؟',
-    answer: 'التعزير',
-    explanation: 'التعزير غير مقدر شرعاً، ويترك للقاضي تقدير الجزاء الأنسب للردع والإصلاح.',
-  },
-  {
-    prompt: 'ما العقوبة الواجبة في القتل الخطأ والجنايات غير العمدية؟',
-    answer: 'القصاص والدية',
-    explanation: 'تجب الدية المسلّمة مع الكفارة، ولا قصاص في الخطأ إطلاقاً.',
-  },
-  {
-    prompt: 'في أي عقوبة يكون الحق الغالب هو حق المجني عليه وأوليائه؟',
-    answer: 'القصاص والدية',
-    explanation: 'حق الآدمي هو الغالب في القصاص والدية، لذلك يملك العفو فيه.',
-  },
-  {
-    prompt: 'عقوبات كالحبس أو الغرامة المالية أو التوبيخ تندرج تحت باب:',
-    answer: 'التعزير',
-    explanation: 'هذه العقوبات تعزيرية يختارها القاضي بحسب جسامة المخالفة وظروفها.',
-  },
-];
-
-function ComparisonActivity({ onComplete }: { onComplete?: () => void }) {
+function ComparisonActivity({ items, onComplete }: { items: DifferenceItem[]; onComplete?: () => void }) {
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState('');
   const [checked, setChecked] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const choices = ['الحدود', 'القصاص والدية', 'التعزير'];
-  const current = comparisonQuestions[index];
+  const current = items[index];
+  const choices = current?.choices ?? [];
+  const table = items.find((item) => item.table)?.table;
 
   function check() {
     if (!current || !choice || checked !== null) return;
@@ -281,7 +144,7 @@ function ComparisonActivity({ onComplete }: { onComplete?: () => void }) {
   }
 
   function next() {
-    if (index === comparisonQuestions.length - 1) {
+    if (index === items.length - 1) {
       setFinished(true);
       onComplete?.();
     } else {
@@ -305,7 +168,7 @@ function ComparisonActivity({ onComplete }: { onComplete?: () => void }) {
         <span className="result-seal" aria-hidden="true">✓</span>
         <p className="eyebrow">اكتملت المقارنة والأحكام</p>
         <h3>أحسنت! أنهيت أسئلة الفروق الشرعية</h3>
-        <p>النتيجة: <strong><bdi>{score}</bdi> من <bdi>{comparisonQuestions.length}</bdi></strong> إجابة صحيحة</p>
+        <p>النتيجة: <strong><bdi>{score}</bdi> من <bdi>{items.length}</bdi></strong> إجابة صحيحة</p>
         <button className="button button--navy" type="button" onClick={retry}>
           إعادة التمرين
         </button>
@@ -320,13 +183,13 @@ function ComparisonActivity({ onComplete }: { onComplete?: () => void }) {
       <p className="activity-instruction">
         راجع جدول الفروق الجوهرية بين العقوبات، ثم أجب عن أسئلة التطبيق التحليلية:
       </p>
-      <ResponsiveTable caption="جدول مقارنة أنواع العقوبات في الإسلام" headers={comparisonHeaders} rows={comparisonRows} />
+      {table && <ResponsiveTable caption={table.caption} headers={table.headers} rows={table.rows} />}
 
       <section className="comparison-question">
         <div className="activity-step__meta">
-          <span>السؤال <bdi>{index + 1}</bdi> من <bdi>{comparisonQuestions.length}</bdi></span>
+          <span>السؤال <bdi>{index + 1}</bdi> من <bdi>{items.length}</bdi></span>
           <div className="step-dots" aria-hidden="true">
-            {comparisonQuestions.map((_, i) => (
+            {items.map((_, i) => (
               <i key={i} className={i <= index ? 'step-dots__active' : ''} />
             ))}
           </div>
@@ -366,7 +229,7 @@ function ComparisonActivity({ onComplete }: { onComplete?: () => void }) {
             </button>
           ) : (
             <button className="button button--copper" type="button" onClick={next}>
-              {index === comparisonQuestions.length - 1 ? 'عرض النتيجة' : 'السؤال التالي'} <span aria-hidden="true">←</span>
+              {index === items.length - 1 ? 'عرض النتيجة' : 'السؤال التالي'} <span aria-hidden="true">←</span>
             </button>
           )}
         </div>
@@ -391,6 +254,7 @@ const hubTabs: HubTabItem[] = [
 ];
 
 export function ActivitiesPage() {
+  const unit = useUnit();
   const [searchParams, setSearchParams] = useSearchParams();
   const { progress, markSectionComplete } = useProgress();
 
@@ -424,14 +288,14 @@ export function ActivitiesPage() {
   }
 
   // Completion criteria
-  const isFlashcardsDone = progress.masteredFlashcardIds.length >= 6 || progress.completedSections.includes('flashcards');
-  const isInteractiveDone = progress.completedSections.includes('activity-interactive');
-  const isAssessmentDone = progress.latestQuizScore !== undefined || progress.completedSections.includes('bac-practice');
+  const isFlashcardsDone = progress.masteredFlashcardIds.length >= 6 || progress.completedSections.includes(sectionKey(unit, 'flashcards'));
+  const isInteractiveDone = progress.completedSections.includes(sectionKey(unit, 'activity-interactive'));
+  const isAssessmentDone = progress.latestQuizScore !== undefined || progress.completedSections.includes(sectionKey(unit, 'activity-bac-practice'));
 
   const completedHubCount = (isFlashcardsDone ? 1 : 0) + (isInteractiveDone ? 1 : 0) + (isAssessmentDone ? 1 : 0);
 
   function handleCompleteInteractive() {
-    markSectionComplete('activity-interactive');
+    markSectionComplete(sectionKey(unit, 'activity-interactive'));
   }
 
   return (
@@ -545,10 +409,10 @@ export function ActivitiesPage() {
 
             <div id="activity-panel" className="activity-panel" role="tabpanel">
               {activeActivityTab === 'classify' && (
-                <FastClassifyActivity key="fast-classify" onComplete={handleCompleteInteractive} />
+                <FastClassifyActivity items={unit.activities.classify} key="fast-classify" onComplete={handleCompleteInteractive} />
               )}
               {activeActivityTab === 'compare' && (
-                <ComparisonActivity key="compare-diff" onComplete={handleCompleteInteractive} />
+                <ComparisonActivity items={unit.activities.difference} key="compare-diff" onComplete={handleCompleteInteractive} />
               )}
             </div>
           </section>
@@ -564,7 +428,7 @@ export function ActivitiesPage() {
                 onClick={() => setAssessmentSubTab('quiz')}
                 aria-pressed={assessmentSubTab === 'quiz'}
               >
-                <span>اختبر نفسك (20 سؤالاً)</span>
+                <span>اختبر نفسك ({unit.quiz.length} سؤالاً)</span>
                 {progress.latestQuizScore !== undefined && (
                   <span className="assessment-switcher__badge"><bdi>{progress.latestQuizScore}%</bdi></span>
                 )}
@@ -577,7 +441,7 @@ export function ActivitiesPage() {
                 aria-pressed={assessmentSubTab === 'bac'}
               >
                 <span>تدريبات البكالوريا</span>
-                {progress.completedSections.includes('bac-practice') && (
+                {progress.completedSections.includes(sectionKey(unit, 'activity-bac-practice')) && (
                   <span className="assessment-switcher__badge">✓ تم التدريب</span>
                 )}
               </button>

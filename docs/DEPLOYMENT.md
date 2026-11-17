@@ -6,47 +6,63 @@
 npm ci
 npm run validate:content
 npm run lint
-npm run typecheck
 npm test
-npm run test:e2e
-npm run build
-npm run test:pwa  # يعيد بناء الإنتاج ويختبر مسار العمل دون اتصال
+npm run build      # tsc -b + vite build + prerender + sitemap
 npm run preview
 ```
 
-يُنتج الأمر `npm run build` مجلد `dist/` ثابتًا. لا يلزم backend أو متغيرات بيئة. يربط `npm run preview` على `0.0.0.0` محليًا لأغراض الفحص.
+`npm run build` ينتج:
 
-## Netlify
+- `dist/` — حزمة المتصفح + نسخة HTML ثابتة لكل مسار (`/`, `/about`, `/units/unit-06`, `/units/unit-06/learn`, ...) في الشكلين `path/index.html` و`path.html`.
+- `dist/sitemap.xml` و`public/sitemap.xml`.
+- `dist-ssr/` — حزمة الخادم المؤقتة (مستبعدة من git).
 
-- Build command: `npm run build`
-- Publish directory: `dist`
-- ملفا `netlify.toml` و`public/_redirects` يعيدان المسارات غير المطابقة لملف ثابت إلى `/index.html` لاستمرار React Router بعد التحديث.
-- لا يلزم إعداد متغيرات بيئة.
+## متغيرات البيئة (اختيارية)
+
+| المتغير | الغرض | الافتراضي |
+|---|---|---|
+| `VITE_SITE_URL` | الرابط المطلق في canonical وOG وsitemap | `https://manhaj-islam.vercel.app` |
+| `VITE_ANALYTICS_DOMAIN` | نطاق Umami/Plausible | فارغ (معطّل) |
+| `VITE_ANALYTICS_PROVIDER` | `umami` أو `plausible` | `umami` |
+
+### تفعيل التحليلات
+
+1. أنشئ حسابًا في [Umami Cloud](https://umami.is) أو [Plausible](https://plausible.io) وأضف النطاق.
+2. أضف سكربت المزوّد في `<head>` داخل `index.html`:
+
+```html
+<script defer src="https://cloud.umami.is/script.js" data-website-id="XXXX"></script>
+```
+
+3. اضبط `VITE_ANALYTICS_DOMAIN` ثم أعد البناء. الأحداث المُرسلة: `pageview`، `lesson_check_answered`، `lesson_section_completed`، `quiz_started`، `quiz_finished`.
+
+لا كوكيز ولا معرّفات شخصية، ولا تُرسل الإجابات نفسها.
 
 ## Vercel
 
-اربط المستودع أو ارفع مجلد المشروع، واختر Vite إذا لم يكتشفه تلقائيًا:
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- `vercel.json` فيه rewrite احتياطي إلى `index.html` للمسارات غير المولّدة (Vercel يقدّم الملفات الموجودة أولًا، فتصل الصفحات الثابتة كما هي).
+- أضف `VITE_SITE_URL` في Project Settings → Environment Variables عند استخدام نطاق مخصص.
 
-- Build command: `npm run build`
-- Output directory: `dist`
-- `vercel.json` يضيف rewrite لمسارات SPA، ويضبط `sw.js` كي لا يبقى قديمًا في cache وسيط.
+## Netlify
 
-الملفات المخصصة للتوجيه موجودة في الجذر. يجب أن تُنشر إلى جذر النطاق نفسه حتى تعمل manifest وService Worker على المسارات المتوقعة.
+- Build Command: `npm run build`
+- Publish Directory: `dist`
+- `_redirects` يحوي `/* /index.html 200` — Netlify يقدّم الملفات الثابتة الموجودة قبل الـ fallback، ما لم يُستخدم `!`.
+- أضف `netlify.toml` كما هو (بناء + headers لـ `sw.js`).
 
-## PWA والعمل دون اتصال
+## Service Worker
 
-- يُخدم `public/manifest.webmanifest` و`public/sw.js` من الجذر.
-- التسجيل يحدث في وضع الإنتاج فقط، على HTTPS أو localhost (وفق قيود Service Worker في المتصفح).
-- العامل يخزّن صفحة الغلاف والموارد المحلية التي حُمّلت؛ يجرّب الشبكة أولًا ويعود إلى الغلاف المخزن عند انقطاع الاتصال.
-- لا توجد خطوط أو صور أو مكتبات CDN مطلوبة لتشغيل الوظائف الأساسية.
-- اختُبر ذلك على معاينة بناء الإنتاج المحلية: بعد تفعيل العامل وإعادة تحميل الصفحة، فُتحت `/learn?section=2` مع تعطيل الشبكة وعاد التطبيق إلى الغلاف المخزن بنجاح. في النشر، أعد الاختبار على نطاق HTTPS الفعلي؛ لا تعتبر التخزين مزامنة بيانات.
+غيّر `CACHE_NAME` في `public/sw.js` عند أي تغيير في الغلاف أو الاستراتيجية. التنقّل: شبكة أولًا ثم الغلاف المخزّن (فتعمل مسارات الوحدة دون اتصال بعد الزيارة الأولى).
 
-## التحقق بعد النشر
+## ما بعد النشر — فحص سريع
 
-1. افتح `/` في نافذة غير مسجلة الدخول.
-2. افتح `/activities` و`/learn?section=2` مباشرة ثم حدّثهما؛ وتحقق من أن `/guide` و`/about` يعرضان صفحة 404.
-3. تحقق من manifest و`/sw.js` ومن استجابة ملفات الأصول.
-4. نفذ رحلة مختصرة على هاتف وحاسوب.
-5. لا تنشر محتوى مراجعًا على أنه رسمي قبل إغلاق عناصر `CONTENT_QA_REPORT.md`.
+```bash
+curl -s https://<domain>/units/unit-06/learn | grep -o '<title>[^<]*'
+curl -s https://<domain>/sitemap.xml | head
+```
 
-لا يحتوي تسليم المشروع الحالي على بيانات اعتماد Netlify/Vercel، لذلك أُعدّ إعداد النشر ولم يُنشأ نطاق عام خارجي.
+- افتح `/units/unit-06/learn` وتحقق من العنوان والوصف في «عرض المصدر» (وليس بعد تحميل JS فقط).
+- اختبر المعاينة في [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) و[WhatsApp](https://www.whatsapp.com/) — يجب أن تظهر الصورة والعنوان.
+- سجّل الموقع في [Google Search Console](https://search.google.com/search-console) وأرسل `sitemap.xml`.

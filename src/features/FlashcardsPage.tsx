@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { unitContent } from '../data';
+import { useUnit } from '../context/useUnit';
 import { useProgress } from '../context/useProgress';
 import { shuffleItems } from '../lib/quiz';
 import { PageHeading } from '../components/PageHeading';
 import { ProgressBar } from '../components/ProgressBar';
 
 export function FlashcardsPage({ embedded }: { embedded?: boolean } = {}) {
+  const unit = useUnit();
   const { progress, markFlashcard } = useProgress();
-  const [cards, setCards] = useState(unitContent.flashcards);
+  const [cards, setCards] = useState(unit.flashcards);
   const [filter, setFilter] = useState<'all' | 'review' | 'unrated'>('all');
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -15,7 +16,7 @@ export function FlashcardsPage({ embedded }: { embedded?: boolean } = {}) {
 
   const masteredSet = useMemo(() => new Set(progress.masteredFlashcardIds), [progress.masteredFlashcardIds]);
   const reviewSet = useMemo(() => new Set(progress.reviewFlashcardIds), [progress.reviewFlashcardIds]);
-  const masteredCount = unitContent.flashcards.filter((card) => masteredSet.has(card.cardId)).length;
+  const masteredCount = unit.flashcards.filter((card) => masteredSet.has(card.cardId)).length;
 
   const deck = useMemo(() => {
     if (filter === 'review') {
@@ -42,14 +43,14 @@ export function FlashcardsPage({ embedded }: { embedded?: boolean } = {}) {
   }
 
   function shuffleDeck() {
-    setCards(shuffleItems(unitContent.flashcards));
+    setCards(shuffleItems(unit.flashcards));
     setIndex(0);
     setRevealed(false);
     setNotice('');
   }
 
   function restartDeck() {
-    setCards(unitContent.flashcards);
+    setCards(unit.flashcards);
     setIndex(0);
     setRevealed(false);
     setNotice('بدأت المجموعة من البطاقة الأولى.');
@@ -86,19 +87,20 @@ export function FlashcardsPage({ embedded }: { embedded?: boolean } = {}) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- move/toggleReveal تُعرَّف في كل رسم ولا نحتاج إعادة ربط المستمع معها
   }, [safeIndex, deck.length, revealed]);
 
   return (
     <div className={`flashcards-page${embedded ? ' flashcards-page--embedded' : ' page-wrap inner-page'}`}>
       {!embedded && (
         <PageHeading
-          eyebrow={`استرجاع نشط · ${unitContent.flashcards.length} بطاقة`}
+          eyebrow={`استرجاع نشط · ${unit.flashcards.length} بطاقة`}
           title="البطاقات التعليمية"
           description="اقرأ السؤال وحاول الاسترجاع من الذاكرة، ثم اكشف الإجابة وسجّل تقدّمك."
         />
       )}
       <div className="flashcards-toolbar">
-        <ProgressBar value={masteredCount} max={unitContent.flashcards.length} label="البطاقات التي علّمتها متقنة" />
+        <ProgressBar value={masteredCount} max={unit.flashcards.length} label="البطاقات التي علّمتها متقنة" />
         <div className="flashcard-filter">
           <button className={`button button--small ${filter === 'all' ? 'button--navy' : 'button--outline'}`} onClick={() => { setFilter('all'); setIndex(0); setRevealed(false); }}>الكل</button>
           <button className={`button button--small ${filter === 'review' ? 'button--copper' : 'button--outline'}`} onClick={() => { setFilter('review'); setIndex(0); setRevealed(false); }}>للمراجعة</button>

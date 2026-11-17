@@ -18,14 +18,14 @@ try {
   await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller), null, { timeout: 10_000 });
 
-  await page.goto(`${baseUrl}/activities`);
-  assert.match(await page.locator('h1').innerText(), /أنشطة تطبيقية/);
+  await page.goto(`${baseUrl}/units/unit-06/activities`);
+  assert.match(await page.locator('h1').innerText(), /الأنشطة والتقويم/);
 
   await context.setOffline(true);
-  await page.goto(`${baseUrl}/learn?section=2`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${baseUrl}/units/unit-06/learn?section=2`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('h1');
   assert.match(await page.locator('h1').innerText(), /تعلّم الدرس/);
-  assert.equal(new URL(page.url()).pathname, '/learn');
+  assert.equal(new URL(page.url()).pathname, '/units/unit-06/learn');
   console.log('✓ PWA: استعاد المسار الداخلي من الغلاف المخزن بعد قطع الشبكة.');
   await context.close();
 } finally {

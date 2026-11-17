@@ -1,4 +1,4 @@
-import type { QuizQuestion } from '../data/normalizeContent';
+import type { QuizQuestion } from '../data/units/normalize';
 
 export interface QuizAnswer {
   selectedOptionId: string | null;

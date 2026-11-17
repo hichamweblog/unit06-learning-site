@@ -6592,3 +6592,249 @@ code {
   }
 }
 
+
+/* ============================================================================
+   PLATFORM LAYER — سجل الوحدات، صفحة المنصة، وصفحة المنهجية
+   (طبقة إضافية فوق نظام التصميم نفسه، تعمل في الوضعين النهاري والليلي)
+   ============================================================================ */
+
+.brand {
+  gap: 12px;
+}
+
+.brand__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--navy-2), var(--navy));
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='dark'] .brand__mark {
+  background: linear-gradient(145deg, var(--copper), var(--copper-hover));
+  color: #10243b;
+}
+
+.hero-provenance {
+  margin: 18px 0 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.hero-provenance a {
+  color: var(--copper-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- سجل الوحدات --- */
+
+.units-section {
+  margin: 56px auto;
+}
+
+.unit-grid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  margin-top: 26px;
+}
+
+.unit-card {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+.unit-card__number {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--copper);
+  line-height: 1;
+}
+
+.unit-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unit-card__body h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: var(--navy);
+}
+
+[data-theme='dark'] .unit-card__body h3 {
+  color: var(--ink);
+}
+
+.unit-card__summary {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+
+.unit-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.unit-card__meta li {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  border: 1px solid var(--line-subtle);
+}
+
+.unit-card--planned {
+  opacity: 0.72;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+/* --- شريط الثقة --- */
+
+.trust-strip {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  margin: 10px auto 60px;
+  padding: 26px;
+  border-radius: var(--radius-lg);
+  background: var(--navy);
+  color: #eef4fa;
+}
+
+.trust-strip strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  color: #fff;
+}
+
+.trust-strip p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: rgba(238, 244, 250, 0.82);
+}
+
+[data-theme='dark'] .trust-strip {
+  background: var(--navy-2);
+}
+
+/* --- صفحة المنهجية --- */
+
+.about-page .content-block {
+  margin-bottom: 30px;
+}
+
+.about-list,
+.source-list {
+  margin: 0;
+  padding-inline-start: 22px;
+  color: var(--muted);
+  line-height: 2;
+}
+
+.source-list li::marker {
+  color: var(--copper);
+}
+
+.about-list code {
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-subtle);
+  border: 1px solid var(--line-subtle);
+  font-size: 0.9em;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+.review-log {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-card);
+}
+
+.review-log h4 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--navy);
+}
+
+[data-theme='dark'] .review-log h4 {
+  color: var(--ink);
+}
+
+.review-log p {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.about-note {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-inline-start: 3px solid var(--copper);
+  background: var(--copper-pale);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 0.93rem;
+}
+
+[data-theme='dark'] .about-note {
+  background: var(--surface-subtle);
+}
+
+.about-footer-note {
+  margin: 30px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.site-footer__bottom a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .unit-card {
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .trust-strip {
+    padding: 22px;
+  }
+}
